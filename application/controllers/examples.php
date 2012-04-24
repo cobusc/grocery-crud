@@ -18,6 +18,42 @@ class Examples extends CI_Controller {
 	{
 		$this->load->view('example.php',$output);	
 	}
+
+        function test2()
+        {
+                $output = $this->grocery_crud->render();
+
+                $this->_example_output($output);
+        }
+
+        function traffic_mo_table()
+        {
+                $output = $this->grocery_crud->render();
+
+                $this->_example_output($output);
+        }
+
+        function traffic_mo_management()
+        {
+                $crud = new grocery_CRUD();
+
+                $crud->set_theme('datatables');
+                $crud->set_table('traffic_mo_table');
+                $crud->display_as('channel_id','Channel Name');
+                $crud->set_relation('channel_id','traffic_channel_table','name');
+
+                $output = $crud->render();
+
+                $this->_example_output($output);
+        }
+
+
+        function traffic_channel_table()
+        {
+                $output = $this->grocery_crud->render();
+
+                $this->_example_output($output);
+        }
 	
 	function offices()
 	{

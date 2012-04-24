@@ -1,0 +1,6 @@
+Load example_database.sql into mysql.
+
+Run: 
+   mysqldump --compatible=postgresql --extended-insert > example_database.pg.sql
+
+

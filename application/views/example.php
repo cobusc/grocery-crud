@@ -33,7 +33,11 @@ a:hover
 		<a href='<?php echo site_url('examples/products_management')?>'>Products</a> |
 		<a href='<?php echo site_url('examples/offices_management')?>'>Offices</a> | 
 		<a href='<?php echo site_url('examples/employees_management')?>'>Employees</a> |		 
-		<a href='<?php echo site_url('examples/film_management')?>'>Films</a>
+		<a href='<?php echo site_url('examples/film_management')?>'>Films</a> | 
+                <a href='<?php echo site_url('examples/traffic_channel_table')?>'>Traffic Channels</a> |
+                <a href='<?php echo site_url('examples/test2')?>'>Test2</a> |
+                <a href='<?php echo site_url('examples/traffic_mo_table')?>'>Traffic Mo Table</a> |
+                <a href='<?php echo site_url('examples/traffic_mo_management')?>'>Traffic Mo Management</a>
 	</div>
 	<div style='height:20px;'></div>  
     <div>

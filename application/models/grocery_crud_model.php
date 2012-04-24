@@ -60,10 +60,27 @@ class grocery_CRUD_Model  extends CI_Model  {
     			$unique_join_name = $this->_unique_join_name($field_name);
     			$unique_field_name = $this->_unique_field_name($field_name);
     			
-				if(strstr($related_field_title,'{'))
-    				$select .= ", CONCAT('".str_replace(array('{','}'),array("',COALESCE({$unique_join_name}.",", ''),'"),str_replace("'","\\'",$related_field_title))."') as $unique_field_name";
-    			else    			
-    				$select .= ", $unique_join_name.$related_field_title AS $unique_field_name";
+			if(strstr($related_field_title,'{'))
+                        {
+                            switch ($this->db->dbdriver)
+                            {
+                                case "postgre": 
+                                    $select .= 
+                                       ", '".
+                                       str_replace(array('{',
+                                                     '}'),
+                                               array("' || COALESCE({$unique_join_name}.\"",
+                                                     "\", '') || '"),
+                                               str_replace("'",
+                                                           "\\'",
+                                                           $related_field_title)).
+                                         "' as $unique_field_name";
+                                    break; 
+                                default: $select .= ", CONCAT('".str_replace(array('{','}'),array("',COALESCE({$unique_join_name}.",", ''),'"),str_replace("'","\\'",$related_field_title))."') as $unique_field_name";
+                            }
+                        }
+    			else    
+    			    $select .= ", $unique_join_name.$related_field_title AS $unique_field_name";
     			
     			if($this->field_exists($related_field_title))
     				$select .= ", {$this->table_name}.$related_field_title AS '{$this->table_name}.$related_field_title'";
@@ -347,10 +364,22 @@ class grocery_CRUD_Model  extends CI_Model  {
     	$this->db->delete($field_info->relation_table);
     }    
     
-    function get_field_types_basic_table()
+    function get_field_types_basic_table($table_name = null)
     {
+        if (empty($table_name))
+            $table_name = $this->table_name;
+
     	$db_field_types = array();
-    	foreach($this->db->query("SHOW COLUMNS FROM {$this->table_name}")->result() as $db_field_type)
+        switch ($this->db->dbdriver)
+        {
+            case "postgre": $sql = "SELECT column_name AS \"Field\", udt_name||'(255)' AS \"Type\", is_nullable AS \"Null\", CASE WHEN ordinal_position = 1 THEN 'PRI' ELSE '' END AS \"Key\", column_default AS \"Default\", '' AS \"Extra\" FROM information_schema.columns WHERE table_name = '{$table_name}'";
+                break;
+            default: $sql = "SHOW COLUMNS FROM {$table_name}";
+            /* MySQL also has: select COLUMN_NAME, COLUMN_DEFAULT, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, COLUMN_TYPE, COLUMN_KEY from information_schema.columns where table_name='traffic_mt_recovery_billing_table';
+             */
+        }
+
+    	foreach($this->db->query($sql)->result() as $db_field_type)
     	{
     		$type = explode("(",$db_field_type->Type);
     		$db_type = $type[0];
@@ -367,12 +396,20 @@ class grocery_CRUD_Model  extends CI_Model  {
     		$db_field_types[$db_field_type->Field]['db_type'] = $db_type;
     		$db_field_types[$db_field_type->Field]['db_null'] = $db_field_type->Null == 'YES' ? true : false;
     		$db_field_types[$db_field_type->Field]['db_extra'] = $db_field_type->Extra;
+                //JEC: This seems to be needed
+                $db_field_types[$db_field_type->Field]['primary_key'] = $db_field_type->Key == 'PRI' ? true : false;
     	}
     	
-    	$results = $this->db->field_data($this->table_name);
+    	$results = $this->db->field_data($table_name);
     	foreach($results as $num => $row)
     	{
     		$row = (array)$row;
+            
+//                echo "**** Merging ****".PHP_EOL;
+//                print_r($row);
+//                echo PHP_EOL." with ".PHP_EOL;
+//                print_r($db_field_types[$row['name']]);
+
     		$results[$num] = (object)( array_merge($row, $db_field_types[$row['name']])  );
     	}
     	
@@ -453,7 +490,7 @@ class grocery_CRUD_Model  extends CI_Model  {
 		    			return $field->name;
 		    		}	
 		    	}
-		    	
+		    
 		    	return false;
 	    	}
 	    	else
@@ -463,7 +500,8 @@ class grocery_CRUD_Model  extends CI_Model  {
     	}
     	else
     	{
-	    	$fields = $this->get_field_types($table_name);
+	    	//JEC $fields = $this->get_field_types($table_name);
+                $fields = $this->get_field_types_basic_table($table_name);
 	    	
 	    	foreach($fields as $field)
 	    	{
