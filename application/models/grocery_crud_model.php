@@ -238,10 +238,32 @@ class grocery_CRUD_Model  extends CI_Model  {
     	
     	$related_primary_key = $this->get_primary_key($related_table);
     	
-    	$select = "$related_table.$related_primary_key, ";
+        switch ($this->db->dbdriver)
+        {   
+            case "postgre": $select = "$related_table.\"$related_primary_key\", "; break;
+            default: $select = "$related_table.$related_primary_key, ";
+        } 
+
     	
     	if(strstr($related_field_title,'{'))
-    		$select .= "CONCAT('".str_replace(array('{','}'),array("',COALESCE(",", ''),'"),str_replace("'","\\'",$related_field_title))."') as $field_name_hash";
+        {
+            switch ($this->db->dbdriver)
+            {
+                case "postgre":
+                    $select .=
+                                       str_replace(array('{',
+                                                     '}'),
+                                               array(" COALESCE(\"",
+                                                     "\", '') || "),
+                                               str_replace("'",
+                                                           "\\'",
+                                                           $related_field_title)).
+                                         "'' as $field_name_hash";
+                                    break;
+                default:
+                    $select .= "CONCAT('".str_replace(array('{','}'),array("',COALESCE(",", ''),'"),str_replace("'","\\'",$related_field_title))."') as $field_name_hash";
+            }
+        }
     	else
 	    	$select .= "$related_table.$related_field_title as $field_name_hash";
     	
