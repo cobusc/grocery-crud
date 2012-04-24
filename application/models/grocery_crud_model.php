@@ -105,15 +105,24 @@ class grocery_CRUD_Model  extends CI_Model  {
     	$this_table_primary_key = $this->get_primary_key();
     	foreach($this->relation_n_n as $relation_n_n)
     	{
-    		list($field_name, $relation_table, $selection_table, $primary_key_alias_to_this_table,
-    					$primary_key_alias_to_selection_table, $title_field_selection_table, $priority_field_relation_table) = array_values((array)$relation_n_n);
+    	    list($field_name, $relation_table, $selection_table, $primary_key_alias_to_this_table,
+    	         $primary_key_alias_to_selection_table, $title_field_selection_table, $priority_field_relation_table) = array_values((array)$relation_n_n);
     			 
-    		$primary_key_selection_table = $this->get_primary_key($selection_table);
+    	    $primary_key_selection_table = $this->get_primary_key($selection_table);
     			 
-    		//Sorry Codeigniter but you cannot help me with the subquery!
-    		$select .= ", (SELECT GROUP_CONCAT(DISTINCT $selection_table.$title_field_selection_table) FROM $selection_table "
-    			."LEFT JOIN $relation_table ON $relation_table.$primary_key_alias_to_selection_table = $selection_table.$primary_key_selection_table "
+    	    //Sorry Codeigniter but you cannot help me with the subquery!
+            switch ($this->db->dbdriver)
+            {
+                case "postgre":
+                    $select .= ", (SELECT array_to_string(array_agg(DISTINCT $selection_table.$title_field_selection_table), ',') FROM $selection_table "
+                        ." LEFT JOIN $relation_table ON $relation_table.$primary_key_alias_to_selection_table = $selection_table.$primary_key_selection_table "
+                        ."WHERE $relation_table.$primary_key_alias_to_this_table = {$this->table_name}.$this_table_primary_key GROUP BY $relation_table.$primary_key_alias_to_this_table) AS $field_name";
+                    break;
+                default:
+                    $select .= ", (SELECT GROUP_CONCAT(DISTINCT $selection_table.$title_field_selection_table) FROM $selection_table "
+                	." LEFT JOIN $relation_table ON $relation_table.$primary_key_alias_to_selection_table = $selection_table.$primary_key_selection_table "
     			."WHERE $relation_table.$primary_key_alias_to_this_table = {$this->table_name}.$this_table_primary_key GROUP BY $relation_table.$primary_key_alias_to_this_table) AS $field_name";
+            }
     	}
 
     	return $select;
