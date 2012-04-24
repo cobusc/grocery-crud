@@ -108,7 +108,7 @@ CREATE TABLE "employees" (
   "extension" varchar(10) NOT NULL,
   "email" varchar(100) NOT NULL,
   "officeCode" varchar(10) NOT NULL,
-  "file_url" varchar(250) CHARACTER SET utf8 NOT NULL,
+  "file_url" varchar(250) NOT NULL,
   "jobTitle" varchar(50) NOT NULL,
   PRIMARY KEY ("employeeNumber")
 );
