@@ -292,7 +292,12 @@ class grocery_CRUD_Model  extends CI_Model  {
     		$this->db->limit($limit);    	
     	
     	if($search_like !== null)
-    		$this->db->having("$field_name_hash LIKE '%".$this->db->escape_like_str($search_like)."%'");
+        {
+            // PostgreSQLs LIKE function is case sensitive. ILIKE is case insensive.
+            $like = ("postgre"==$this->db->dbdriver) ? "ILIKE" : "LIKE";
+
+            $this->db->having("$field_name_hash $like '%".$this->db->escape_like_str($search_like)."%'");
+        }
     	
     	$order_by !== null 
     		? $this->db->order_by($order_by) 
