@@ -73,7 +73,7 @@ class Examples extends CI_Controller {
 			/* This is only for the autocompletion */
 			$crud = new grocery_CRUD();
 
-			$crud->set_theme('datatables');
+			//$crud->set_theme('datatables');
 			$crud->set_table('offices');
 			$crud->set_subject('Office');
 			$crud->required_fields('city');
@@ -176,5 +176,50 @@ class Examples extends CI_Controller {
 		
 		$this->_example_output($output);
 	}
-	
+
+        function spm_instance()
+        {
+            $output = $this->grocery_crud->render();
+
+            $this->_example_output($output);    
+        }
+
+        function spm_service()
+        {
+            $crud = new grocery_CRUD();
+
+//            $crud->set_table('spm_service');
+
+            $crud->set_relation('instance_id','spm_instance','short_hostname');
+//            $crud->display_as('instance_id','Instance');
+
+            $crud->set_relation('svc_id','agg_svc_table','{name}');
+//            $crud->display_as('svc_id','Agg Svc Id');
+
+            $output = $crud->render();
+
+            $this->_example_output($output);            
+        }
+
+        function spm_url()
+        {
+            $crud = new grocery_CRUD();
+
+//            $crud->set_table('spm_url');
+
+            $crud->set_relation('service_id','spm_service','name');
+//            $crud->display_as('service_id','Service Name');
+
+            $crud->set_relation('bearer_id','spm_bearer','bearer');
+//            $crud->display_as('instance_id','Instance');
+
+            $crud->set_relation('url_type_id','spm_url_type','name');          
+
+//            $crud->unset_fields('created_at', 'updated_at');
+
+            $output = $crud->render();
+
+            $this->_example_output($output);
+        }
+
 }

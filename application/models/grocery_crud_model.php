@@ -18,6 +18,20 @@
 
 // ------------------------------------------------------------------------
 
+
+// PostgreSQL to MySQL type mapping
+
+$mysql_mapped_type = array(
+    "double precision" => "double",
+    "real" => "float",
+    "timestamp with timezone" => "datetime",
+    "timestamp" => "datetime",
+    "character varying" => "varchar",
+    "text" => "longtext",
+    "bytea" => "blob"
+);
+
+    
 /**
  * Grocery CRUD Model
  *
@@ -403,7 +417,8 @@ class grocery_CRUD_Model  extends CI_Model  {
     	$db_field_types = array();
         switch ($this->db->dbdriver)
         {
-            case "postgre": $sql = "SELECT column_name AS \"Field\", udt_name||'(255)' AS \"Type\", is_nullable AS \"Null\", CASE WHEN ordinal_position = 1 THEN 'PRI' ELSE '' END AS \"Key\", column_default AS \"Default\", '' AS \"Extra\" FROM information_schema.columns WHERE table_name = '{$table_name}'";
+            case "postgre": //$sql = "SELECT column_name AS \"Field\", udt_name||'(255)' AS \"Type\", is_nullable AS \"Null\", CASE WHEN ordinal_position = 1 THEN 'PRI' ELSE '' END AS \"Key\", column_default AS \"Default\", '' AS \"Extra\" FROM information_schema.columns WHERE table_name = '{$table_name}'";
+                $sql = "SELECT column_name AS \"Field\", data_type AS \"Type\", is_nullable AS \"Null\", CASE WHEN ordinal_position = 1 THEN 'PRI' ELSE '' END AS \"Key\", column_default AS \"Default\", '' AS \"Extra\" FROM information_schema.columns WHERE table_name = '{$table_name}'";
                 break;
             default: $sql = "SHOW COLUMNS FROM {$table_name}";
             /* MySQL also has: select COLUMN_NAME, COLUMN_DEFAULT, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, COLUMN_TYPE, COLUMN_KEY from information_schema.columns where table_name='traffic_mt_recovery_billing_table';
@@ -413,7 +428,11 @@ class grocery_CRUD_Model  extends CI_Model  {
     	foreach($this->db->query($sql)->result() as $db_field_type)
     	{
     		$type = explode("(",$db_field_type->Type);
+
     		$db_type = $type[0];
+
+                if ("postgre"==$this->db->dbdriver && isset($mysql_mapped_type[$db_type]))
+                    $db_type = $mysql_mapped_type[$db_type];
     		
     		if(isset($type[1]))
     		{
