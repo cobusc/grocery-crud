@@ -19,42 +19,6 @@ class Examples extends CI_Controller {
 		$this->load->view('example.php',$output);	
 	}
 
-        function test2()
-        {
-                $output = $this->grocery_crud->render();
-
-                $this->_example_output($output);
-        }
-
-        function traffic_mo_table()
-        {
-                $output = $this->grocery_crud->render();
-
-                $this->_example_output($output);
-        }
-
-        function traffic_mo_management()
-        {
-                $crud = new grocery_CRUD();
-
-                $crud->set_theme('datatables');
-                $crud->set_table('traffic_mo_table');
-                $crud->display_as('channel_id','Channel Name');
-                $crud->set_relation('channel_id','traffic_channel_table','name');
-
-                $output = $crud->render();
-
-                $this->_example_output($output);
-        }
-
-
-        function traffic_channel_table()
-        {
-                $output = $this->grocery_crud->render();
-
-                $this->_example_output($output);
-        }
-	
 	function offices()
 	{
 		$output = $this->grocery_crud->render();
@@ -176,50 +140,5 @@ class Examples extends CI_Controller {
 		
 		$this->_example_output($output);
 	}
-
-        function spm_instance()
-        {
-            $output = $this->grocery_crud->render();
-
-            $this->_example_output($output);    
-        }
-
-        function spm_service()
-        {
-            $crud = new grocery_CRUD();
-
-//            $crud->set_table('spm_service');
-
-            $crud->set_relation('instance_id','spm_instance','short_hostname');
-//            $crud->display_as('instance_id','Instance');
-
-            $crud->set_relation('svc_id','agg_svc_table','{name}');
-//            $crud->display_as('svc_id','Agg Svc Id');
-
-            $output = $crud->render();
-
-            $this->_example_output($output);            
-        }
-
-        function spm_url()
-        {
-            $crud = new grocery_CRUD();
-
-//            $crud->set_table('spm_url');
-
-            $crud->set_relation('service_id','spm_service','name');
-//            $crud->display_as('service_id','Service Name');
-
-            $crud->set_relation('bearer_id','spm_bearer','bearer');
-//            $crud->display_as('instance_id','Instance');
-
-            $crud->set_relation('url_type_id','spm_url_type','name');          
-
-//            $crud->unset_fields('created_at', 'updated_at');
-
-            $output = $crud->render();
-
-            $this->_example_output($output);
-        }
 
 }

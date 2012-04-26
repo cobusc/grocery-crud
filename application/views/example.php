@@ -33,10 +33,7 @@ a:hover
 		<a href='<?php echo site_url('examples/products_management')?>'>Products</a> |
 		<a href='<?php echo site_url('examples/offices_management')?>'>Offices</a> | 
 		<a href='<?php echo site_url('examples/employees_management')?>'>Employees</a> |		 
-		<a href='<?php echo site_url('examples/film_management')?>'>Films</a> | 
-                <a href='<?php echo site_url('examples/spm_instance')?>'>SPM instances</a> | 
-                <a href='<?php echo site_url('examples/spm_service')?>'>SPM services</a> | 
-                <a href='<?php echo site_url('examples/spm_url')?>'>SPM URLs</a> 
+		<a href='<?php echo site_url('examples/film_management')?>'>Films</a> 
 	</div>
 	<div style='height:20px;'></div>  
     <div>
