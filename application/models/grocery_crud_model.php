@@ -24,7 +24,8 @@
 $mysql_mapped_type = array(
     "double precision" => "double",
     "real" => "float",
-    "timestamp with timezone" => "datetime",
+    "timestamp with time zone" => "datetime",
+    "timestamp without time zone" => "datetime",
     "timestamp" => "datetime",
     "character varying" => "varchar",
     "text" => "longtext",
