@@ -98,8 +98,14 @@ class grocery_CRUD_Model  extends CI_Model  {
     			    $select .= ", $unique_join_name.$related_field_title AS $unique_field_name";
     			
     			if($this->field_exists($related_field_title))
-    				$select .= ", {$this->table_name}.$related_field_title AS '{$this->table_name}.$related_field_title'";
-    		}
+                        {
+                            switch ($this->db->dbdriver)
+                            {
+                                case "postgre": $select .= ", {$this->table_name}.$related_field_title"; break;
+    				default: $select .= ", {$this->table_name}.$related_field_title AS '{$this->table_name}.$related_field_title'";
+                            }
+    	  	        }
+                }
     	}
     	
     	//set_relation_n_n special queries. We prefer sub queries from a simple join for the relation_n_n as it is faster and more stable on big tables.
@@ -129,6 +135,7 @@ class grocery_CRUD_Model  extends CI_Model  {
             switch ($this->db->dbdriver)
             {
                 case "postgre":
+                    // PostgreSQL 9 provides the string_agg() function, which is a bit better than using array_agg() and array_to_string()
                     $select .= ", (SELECT array_to_string(array_agg(DISTINCT $selection_table.$title_field_selection_table), ',') FROM $selection_table "
                         ." LEFT JOIN $relation_table ON $relation_table.$primary_key_alias_to_selection_table = $selection_table.$primary_key_selection_table "
                         ."WHERE $relation_table.$primary_key_alias_to_this_table = {$this->table_name}.$this_table_primary_key GROUP BY $relation_table.$primary_key_alias_to_this_table) AS $field_name";
@@ -532,7 +539,9 @@ class grocery_CRUD_Model  extends CI_Model  {
     }    
     
     function get_primary_key($table_name = null)
-    {
+    { 
+        $result = false;
+
     	if($table_name == null)
     	{
 	    	if(empty($this->primary_key))
@@ -543,15 +552,14 @@ class grocery_CRUD_Model  extends CI_Model  {
 		    	{
 		    		if($field->primary_key == 1)
 		    		{
-		    			return $field->name;
+		    			$result = $field->name;
+                                        break;
 		    		}	
 		    	}
-		    
-		    	return false;
 	    	}
 	    	else
 	    	{
-	    		return $this->primary_key; 
+	    		$result = $this->primary_key; 
 	    	}
     	}
     	else
@@ -563,13 +571,16 @@ class grocery_CRUD_Model  extends CI_Model  {
 	    	{
 	    		if($field->primary_key == 1)
 	    		{
-	    			return $field->name;
+	    			$result = $field->name;
+                                break;
 	    		}	
 	    	}
-	    	
-	    	return false;
     	}
-    	
+
+        
+        //printf("PK table %s => $result\n", !empty($table_name) ? $table_name : $this->table_name);
+
+        return $result;	
     }
     
     function escape_str($value)
