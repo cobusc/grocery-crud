@@ -19,19 +19,28 @@
 // ------------------------------------------------------------------------
 
 
-// PostgreSQL to MySQL type mapping
+function psql2mysql_type($pg_type)
+{
+    // PostgreSQL to MySQL type mapping
+    $mysql_mapped_type = array(
+        "double precision" => "double",
+        "real" => "float",
+        "timestamp with time zone" => "datetime",
+        "timestamp without time zone" => "datetime",
+        "timestamp" => "datetime",
+        "character varying" => "varchar",
+        "text" => "longtext",
+        "bytea" => "blob",
+        "boolean" => "boolean",
+        "integer" => "integer"
+    );
 
-$mysql_mapped_type = array(
-    "double precision" => "double",
-    "real" => "float",
-    "timestamp with time zone" => "datetime",
-    "timestamp without time zone" => "datetime",
-    "timestamp" => "datetime",
-    "character varying" => "varchar",
-    "text" => "longtext",
-    "bytea" => "blob"
-);
+    if (isset($mysql_mapped_type[$pg_type]))
+        return $mysql_mapped_type[$pg_type];
 
+    echo "Unmapped type: $pg_type\n";
+    return $pg_type;
+}
     
 /**
  * Grocery CRUD Model
@@ -444,8 +453,8 @@ class grocery_CRUD_Model  extends CI_Model  {
 
     		$db_type = $type[0];
 
-                if ("postgre"==$this->db->dbdriver && isset($mysql_mapped_type[$db_type]))
-                    $db_type = $mysql_mapped_type[$db_type];
+                if ("postgre"==$this->db->dbdriver)
+                    $db_type = psql2mysql_type($db_type);
     		
     		if(isset($type[1]))
     		{
@@ -461,6 +470,8 @@ class grocery_CRUD_Model  extends CI_Model  {
     		$db_field_types[$db_field_type->Field]['db_extra'] = $db_field_type->Extra;
                 //JEC: This seems to be needed
                 $db_field_types[$db_field_type->Field]['primary_key'] = $db_field_type->Key == 'PRI' ? true : false;
+                //This is a hack. Should be handled propoerly in the library/grocery_crud.php file
+                $db_field_types[$db_field_type->Field]['type'] = $db_type;
     	}
     	
     	$results = $this->db->field_data($table_name);
@@ -468,10 +479,10 @@ class grocery_CRUD_Model  extends CI_Model  {
     	{
     		$row = (array)$row;
             
-//                echo "**** Merging ****".PHP_EOL;
-//                print_r($row);
-//                echo PHP_EOL." with ".PHP_EOL;
-//                print_r($db_field_types[$row['name']]);
+                //echo "**** Merging ****".PHP_EOL;
+                //print_r($row);
+                //echo PHP_EOL." with ".PHP_EOL;
+                //print_r($db_field_types[$row['name']]);
 
     		$results[$num] = (object)( array_merge($row, $db_field_types[$row['name']])  );
     	}
