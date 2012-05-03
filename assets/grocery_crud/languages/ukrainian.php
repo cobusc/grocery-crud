@@ -54,3 +54,7 @@
 	$lang['list_record'] = 'Запис';
 	$lang['form_inactive'] = 'не активно';
 	$lang['form_active'] = 'активно';
+	
+	/* Added in version 1.2.2 */
+	$lang['form_save_and_go_back']	= 'Додати та повернутися до списку';
+	$lang['form_update_and_go_back']= 'Оновити та повернутися до списку';
