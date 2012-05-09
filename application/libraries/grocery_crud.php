@@ -2613,10 +2613,11 @@ class grocery_CRUD extends grocery_CRUD_States
 	protected $unset_edit			= false;
 	protected $unset_delete			= false;
 	protected $unset_jquery			= false;
+	protected $unset_list			= false;
+	protected $unset_back_to_list	= false;
 	protected $unset_columns		= null;
 	protected $unset_add_fields 	= null;
 	protected $unset_edit_fields	= null;
-	protected $unset_back_to_list	= false;
 	
 	/* Callbacks */
 	protected $callback_before_insert 	= null;
@@ -2821,6 +2822,13 @@ class grocery_CRUD extends grocery_CRUD_States
 		
 		$this->unset_columns = $args;
 		
+		return $this;
+	}	
+	
+	public function unset_list()
+	{
+		$this->unset_list = true;
+	
 		return $this;
 	}	
 	
@@ -3311,6 +3319,12 @@ class grocery_CRUD extends grocery_CRUD_States
 		switch ($this->state_code) {
 			case 15://success
 			case 1://list
+				if($this->unset_list)
+				{
+					throw new Exception('You don\'t have permissions for this operation', 14);
+					die();
+				}
+				
 				if($this->theme === null)
 					$this->set_theme($this->default_theme);				
 				$this->setThemeBasics();
@@ -3406,6 +3420,12 @@ class grocery_CRUD extends grocery_CRUD_States
 			break;	
 
 			case 7://ajax_list
+				
+				if($this->unset_list)
+				{
+					throw new Exception('You don\'t have permissions for this operation', 14);
+					die();
+				}
 				
 				if($this->theme === null)
 					$this->set_theme($this->default_theme);				
