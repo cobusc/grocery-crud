@@ -58,3 +58,14 @@
 	/* Added in version 1.2.2 */
 	$lang['form_save_and_go_back']	= 'Додати та повернутися до списку';
 	$lang['form_update_and_go_back']= 'Оновити та повернутися до списку';
+
+	/* Upload functionality */
+	$lang['string_delete_file'] = "Видалення файлу";
+	$lang['string_progress'] = "Прогрес: ";
+	$lang['error_on_uploading'] = "При завантаженні виникла помилка.";
+	$lang['message_promt_delete_file'] = "Ви впевнені, що бажаєте видалити цей файл?";
+	
+	$lang['error_max_number_of_files'] = "Одночасно можна завантажити тільки один файл.";
+	$lang['error_accept_file_types'] = "Не дозволяється завантажувати файли з даним розширенням.";
+	$lang['error_max_file_size'] = "Розмір файлу, що завантажується, перевищує максимально допустиме значення {max_file_size}.";
+	$lang['error_min_file_size'] = "Не можна завантажити порожній файл.";

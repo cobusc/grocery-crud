@@ -73,7 +73,7 @@ class grocery_CRUD_Model  extends CI_Model  {
     	if($this->table_name === null)
     		return false;
     	
-    	$select = "{$this->table_name}.*";
+    	$select = "`{$this->table_name}`.*";
     	
     	//set_relation special queries 
     	if(!empty($this->relation))
@@ -111,7 +111,7 @@ class grocery_CRUD_Model  extends CI_Model  {
                             switch ($this->db->dbdriver)
                             {
                                 case "postgre": $select .= ", {$this->table_name}.$related_field_title"; break;
-    				default: $select .= ", {$this->table_name}.$related_field_title AS '{$this->table_name}.$related_field_title'";
+    				default: $select .= ", `{$this->table_name}`.$related_field_title AS '`{$this->table_name}`.$related_field_title'";
                             }
     	  	        }
                 }
@@ -150,10 +150,9 @@ class grocery_CRUD_Model  extends CI_Model  {
                         ."WHERE $relation_table.$primary_key_alias_to_this_table = {$this->table_name}.$this_table_primary_key GROUP BY $relation_table.$primary_key_alias_to_this_table) AS $field_name";
                     break;
                 default:
-                    $select .= ", (SELECT GROUP_CONCAT(DISTINCT $selection_table.$title_field_selection_table) FROM $selection_table "
-                	." LEFT JOIN $relation_table ON $relation_table.$primary_key_alias_to_selection_table = $selection_table.$primary_key_selection_table "
-    			."WHERE $relation_table.$primary_key_alias_to_this_table = {$this->table_name}.$this_table_primary_key GROUP BY $relation_table.$primary_key_alias_to_this_table) AS $field_name";
-            }
+                    $select .= ", (SELECT GROUP_CONCAT(DISTINCT $selection_table.$title_field_selection_table) FROM $selection_table "                                                                                                         
+                          ."LEFT JOIN $relation_table ON $relation_table.$primary_key_alias_to_selection_table = $selection_table.$primary_key_selection_table "                                                                             
+                          ."WHERE $relation_table.$primary_key_alias_to_this_table = `{$this->table_name}`.$this_table_primary_key GROUP BY $relation_table.$primary_key_alias_to_this_table) AS $field_name";
     	}
 
     	return $select;
@@ -440,9 +439,9 @@ class grocery_CRUD_Model  extends CI_Model  {
         switch ($this->db->dbdriver)
         {
             case "postgre": //$sql = "SELECT column_name AS \"Field\", udt_name||'(255)' AS \"Type\", is_nullable AS \"Null\", CASE WHEN ordinal_position = 1 THEN 'PRI' ELSE '' END AS \"Key\", column_default AS \"Default\", '' AS \"Extra\" FROM information_schema.columns WHERE table_name = '{$table_name}'";
-                $sql = "SELECT column_name AS \"Field\", data_type AS \"Type\", is_nullable AS \"Null\", CASE WHEN ordinal_position = 1 THEN 'PRI' ELSE '' END AS \"Key\", column_default AS \"Default\", '' AS \"Extra\" FROM information_schema.columns WHERE table_name = '{$table_name}'";
+                $sql = "SELECT column_name AS \"Field\", data_type AS \"Type\", is_nullable AS \"Null\", CASE WHEN ordinal_position = 1 THEN 'PRI' ELSE '' END AS \"Key\", column_default AS \"Default\", '' AS \"Extra\" FROM information_schema.columns WHERE table_name = '{$this->table_name}'";
                 break;
-            default: $sql = "SHOW COLUMNS FROM {$table_name}";
+            default: $sql = "SHOW COLUMNS FROM `{$this->table_name}`";
             /* MySQL also has: select COLUMN_NAME, COLUMN_DEFAULT, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, COLUMN_TYPE, COLUMN_KEY from information_schema.columns where table_name='traffic_mt_recovery_billing_table';
              */
         }
