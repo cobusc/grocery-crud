@@ -73,7 +73,12 @@ class grocery_CRUD_Model  extends CI_Model  {
     	if($this->table_name === null)
     		return false;
     	
-    	$select = "`{$this->table_name}`.*";
+        
+        switch ($this->db->dbdriver)
+        {
+            case "postgre": $select = "{$this->table_name}.*"; break;
+            default:  $select = "`{$this->table_name}`.*";
+        }
     	
     	//set_relation special queries 
     	if(!empty($this->relation))
@@ -120,7 +125,7 @@ class grocery_CRUD_Model  extends CI_Model  {
     	//set_relation_n_n special queries. We prefer sub queries from a simple join for the relation_n_n as it is faster and more stable on big tables.
     	if(!empty($this->relation_n_n))
     	{
-			$select = $this->relation_n_n_queries($select);
+		$select = $this->relation_n_n_queries($select);
     	}
     		
     	$this->db->select($select, false);
@@ -150,9 +155,10 @@ class grocery_CRUD_Model  extends CI_Model  {
                         ."WHERE $relation_table.$primary_key_alias_to_this_table = {$this->table_name}.$this_table_primary_key GROUP BY $relation_table.$primary_key_alias_to_this_table) AS $field_name";
                     break;
                 default:
-                    $select .= ", (SELECT GROUP_CONCAT(DISTINCT $selection_table.$title_field_selection_table) FROM $selection_table "                                                                                                         
+                    $select .= ", (SELECT GROUP_CONCAT(DISTINCT $selection_table.$title_field_selection_table) FROM $selection_table "                                                                                                       
                           ."LEFT JOIN $relation_table ON $relation_table.$primary_key_alias_to_selection_table = $selection_table.$primary_key_selection_table "                                                                             
                           ."WHERE $relation_table.$primary_key_alias_to_this_table = `{$this->table_name}`.$this_table_primary_key GROUP BY $relation_table.$primary_key_alias_to_this_table) AS $field_name";
+            }
     	}
 
     	return $select;
@@ -231,24 +237,24 @@ class grocery_CRUD_Model  extends CI_Model  {
     
     function join_relation($field_name , $related_table , $related_field_title)
     {
-		$related_primary_key = $this->get_primary_key($related_table);
+	$related_primary_key = $this->get_primary_key($related_table);
 		
-		if($related_primary_key !== false)
-		{
-			$unique_name = $this->_unique_join_name($field_name);
-			$this->db->join( $related_table.' as '.$unique_name , "$unique_name.$related_primary_key = {$this->table_name}.$field_name",'left');
+	if($related_primary_key !== false)
+	{
+	    $unique_name = $this->_unique_join_name($field_name);
+	    $this->db->join( $related_table.' as '.$unique_name , "$unique_name.$related_primary_key = {$this->table_name}.$field_name",'left');
 
-			$this->relation[$field_name] = array($field_name , $related_table , $related_field_title);
-			
-			return true;
-		}
+	    $this->relation[$field_name] = array($field_name , $related_table , $related_field_title);
+		
+	    return true;
+	}
     	
     	return false;
     }
     
     function set_relation_n_n_field($field_info)
     {    
-		$this->relation_n_n[$field_info->field_name] = $field_info;
+	$this->relation_n_n[$field_info->field_name] = $field_info;
     }
     
     protected function _unique_join_name($field_name)
@@ -430,11 +436,8 @@ class grocery_CRUD_Model  extends CI_Model  {
     	$this->db->delete($field_info->relation_table);
     }    
     
-    function get_field_types_basic_table($table_name = null)
+    function get_field_types_basic_table()
     {
-        if (empty($table_name))
-            $table_name = $this->table_name;
-
     	$db_field_types = array();
         switch ($this->db->dbdriver)
         {
@@ -469,22 +472,24 @@ class grocery_CRUD_Model  extends CI_Model  {
     		$db_field_types[$db_field_type->Field]['db_extra'] = $db_field_type->Extra;
                 //JEC: This seems to be needed
                 $db_field_types[$db_field_type->Field]['primary_key'] = $db_field_type->Key == 'PRI' ? true : false;
-                //This is a hack. Should be handled propoerly in the library/grocery_crud.php file
+                //This is a hack. Should be handled properly in the library/grocery_crud.php file
                 $db_field_types[$db_field_type->Field]['type'] = $db_type;
     	}
+        //print_r($db_field_types);
     	
-    	$results = $this->db->field_data($table_name);
+    	$results = $this->db->field_data($this->table_name);
     	foreach($results as $num => $row)
     	{
     		$row = (array)$row;
             
-                //echo "**** Merging ****".PHP_EOL;
-                //print_r($row);
-                //echo PHP_EOL." with ".PHP_EOL;
-                //print_r($db_field_types[$row['name']]);
+                /*echo "**** Merging ****".PHP_EOL;
+                print_r($row);
+                echo PHP_EOL." with ".PHP_EOL;
+                print_r($db_field_types[$row['name']]);*/
 
     		$results[$num] = (object)( array_merge($row, $db_field_types[$row['name']])  );
     	}
+        //print_r($results);
     	
     	return $results;
     }
@@ -574,8 +579,8 @@ class grocery_CRUD_Model  extends CI_Model  {
     	}
     	else
     	{
-	    	//JEC $fields = $this->get_field_types($table_name);
-                $fields = $this->get_field_types_basic_table($table_name);
+	    	$fields = $this->get_field_types($table_name);
+                //Should be? $fields = $this->get_field_types_basic_table($table_name);
 	    	
 	    	foreach($fields as $field)
 	    	{
