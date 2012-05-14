@@ -436,8 +436,14 @@ class grocery_CRUD_Model  extends CI_Model  {
     	$this->db->delete($field_info->relation_table);
     }    
     
-    function get_field_types_basic_table()
+    function get_field_types_basic_table($table_name = null)
     {
+        if ($table_name)
+        {
+            $tmp = $this->table_name;
+            $this->table_name = $table_name;
+        }
+
     	$db_field_types = array();
         switch ($this->db->dbdriver)
         {
@@ -490,6 +496,9 @@ class grocery_CRUD_Model  extends CI_Model  {
     		$results[$num] = (object)( array_merge($row, $db_field_types[$row['name']])  );
     	}
         //print_r($results);
+
+        if ($table_name)
+            $this->table_name = $tmp;
     	
     	return $results;
     }
@@ -579,8 +588,8 @@ class grocery_CRUD_Model  extends CI_Model  {
     	}
     	else
     	{
-	    	$fields = $this->get_field_types($table_name);
-                //Should be? $fields = $this->get_field_types_basic_table($table_name);
+	    	//$fields = $this->get_field_types($table_name);
+                $fields = $this->get_field_types_basic_table($table_name);
 	    	
 	    	foreach($fields as $field)
 	    	{
