@@ -440,6 +440,10 @@ class grocery_CRUD_Model_Driver extends grocery_CRUD_Field_Types
 			foreach($this->having as $having)
 				$this->basic_model->having($having[0],$having[1],$having[2]);		
 		
+		if(!empty($this->or_having))
+			foreach($this->or_having as $or_having)
+				$this->basic_model->or_having($or_having[0],$or_having[1],$or_having[2]);	
+		
 		if(!empty($this->relation))
 			foreach($this->relation as $relation)
 				$this->basic_model->join_relation($relation[0],$relation[1],$relation[2]);				
@@ -548,7 +552,11 @@ class grocery_CRUD_Model_Driver extends grocery_CRUD_Field_Types
 						{	
 							$this->or_like($temp_relation[$column->field_name], $search_text);
 						}
-					}					
+					}
+					elseif(isset($this->relation_n_n[$column->field_name]))
+					{
+						//@todo have a where for the relation_n_n statement
+					}									
 					else 
 					{
 						$this->or_like($column->field_name, $search_text);
@@ -1063,6 +1071,10 @@ class grocery_CRUD_Model_Driver extends grocery_CRUD_Field_Types
 		if(!empty($this->having))
 			foreach($this->having as $having)
 				$this->basic_model->having($having[0],$having[1],$having[2]);		
+		
+		if(!empty($this->or_having))
+			foreach($this->or_having as $or_having)
+				$this->basic_model->or_having($or_having[0],$or_having[1],$or_having[2]);		
 		
 		if(!empty($this->relation))
 			foreach($this->relation as $relation)
@@ -2613,6 +2625,7 @@ class grocery_CRUD extends grocery_CRUD_States
 	protected $where 				= array();
 	protected $like 				= array();
 	protected $having 				= array();
+	protected $or_having 			= array();
 	protected $limit 				= null;
 	protected $required_fields		= array();
 	protected $validation_rules		= array();
@@ -3297,6 +3310,11 @@ class grocery_CRUD extends grocery_CRUD_States
 		$this->having[] = array($key, $value, $escape);
 	}
 	
+	protected function or_having($key, $value = '', $escape = TRUE)
+	{
+		$this->or_having[] = array($key, $value, $escape);
+	}	
+	
 	public function or_like($field, $match = '', $side = 'both')
 	{
 		$this->or_like[] = array($field, $match, $side);
@@ -3305,6 +3323,14 @@ class grocery_CRUD extends grocery_CRUD_States
 	public function limit($limit, $offset = '')
 	{
 		$this->limit = array($limit,$offset);
+	}
+	
+	private function _initialize_helpers()
+	{
+		$ci = &get_instance();
+		
+		$ci->load->helper('url');
+		$ci->load->helper('form');
 	}
 	
 	/**
@@ -3319,6 +3345,7 @@ class grocery_CRUD extends grocery_CRUD_States
 	{
 		$this->_load_language();
 		$this->state_code = $this->getStateCode();
+		$this->_initialize_helpers();
 		
 		if( $this->state_code != 0 )
 		{
