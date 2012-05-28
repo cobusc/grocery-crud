@@ -254,7 +254,8 @@ class grocery_CRUD_Field_Types
 				if(!empty($value) && $value != '0000-00-00' && $value != '1970-01-01')
 				{
 					list($year,$month,$day) = explode("-",$value);
-					$value = date ("d M Y",mktime (0,0,0,(int)$month , (int)$day , (int)$year));
+					
+					$value = date($this->php_date_format, mktime (0, 0, 0, (int)$month , (int)$day , (int)$year));
 				}
 				else 
 				{
@@ -265,8 +266,9 @@ class grocery_CRUD_Field_Types
 				if(!empty($value) && $value != '0000-00-00 00:00:00' && $value != '1970-01-01 00:00:00')
 				{
 					list($year,$month,$day) = explode("-",$value);
-					list($hours,$minutes) = explode(":",substr($value,11));		
-					$value = date ("d M Y - H:i", mktime ( (int)$hours , (int)$minutes ,0, (int)$month , (int)$day ,(int)$year));
+					list($hours,$minutes) = explode(":",substr($value,11));
+					
+					$value = date($this->php_date_format." - H:i", mktime ((int)$hours , (int)$minutes , 0, (int)$month , (int)$day ,(int)$year));
 				}
 				else 
 				{
@@ -3338,6 +3340,20 @@ class grocery_CRUD extends grocery_CRUD_States
 		$ci->load->helper('form');
 	}
 	
+	protected function pre_render()
+	{
+		$this->_initialize_helpers();
+		$this->_load_language();
+		$this->state_code = $this->getStateCode();
+		
+		if($this->basic_model === null)
+			$this->set_default_Model();
+		
+		$this->set_basic_db_table($this->get_table());	
+
+		$this->_load_date_format();		
+	}
+	
 	/**
 	 * 
 	 * Or else ... make it work! The web application takes decision of what to do and show it to the final user.
@@ -3348,9 +3364,7 @@ class grocery_CRUD extends grocery_CRUD_States
 	 */
 	public function render()
 	{
-		$this->_initialize_helpers();
-		$this->_load_language();
-		$this->state_code = $this->getStateCode();
+		$this->pre_render();
 		
 		if( $this->state_code != 0 )
 		{
@@ -3360,12 +3374,7 @@ class grocery_CRUD extends grocery_CRUD_States
 		{
 			throw new Exception('The state is unknown , I don\'t know what I will do with your data!', 4);
 			die();
-		}		
-		
-		if($this->basic_model === null)
-			$this->set_default_Model();
-		
-		$this->set_basic_db_table($this->get_table());		
+		}
 		
 		switch ($this->state_code) {
 			case 15://success
@@ -3395,8 +3404,6 @@ class grocery_CRUD extends grocery_CRUD_States
 					die();
 				}
 				
-				$this->_load_date_format();
-				
 				if($this->theme === null)
 					$this->set_theme($this->default_theme);				
 				$this->setThemeBasics();
@@ -3413,8 +3420,6 @@ class grocery_CRUD extends grocery_CRUD_States
 					throw new Exception('You don\'t have permissions for this operation', 14);
 					die();
 				}
-				
-				$this->_load_date_format();
 				
 				if($this->theme === null)
 					$this->set_theme($this->default_theme);				
@@ -3447,7 +3452,6 @@ class grocery_CRUD extends grocery_CRUD_States
 					throw new Exception('This user is not allowed to do this operation', 14);
 					die();
 				}
-				$this->_load_date_format();
 				
 				$state_info = $this->getStateInfo();
 				$insert_result = $this->db_insert($state_info);
@@ -3461,8 +3465,6 @@ class grocery_CRUD extends grocery_CRUD_States
 					throw new Exception('This user is not allowed to do this operation', 14);
 					die();
 				}
-				
-				$this->_load_date_format();
 				
 				$state_info = $this->getStateInfo();
 				$update_result = $this->db_update($state_info);
