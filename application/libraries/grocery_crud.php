@@ -2009,7 +2009,7 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 			var string_delete_file 	= "'.$this->l('string_delete_file').'";
 			var string_progress 			= "'.$this->l('string_progress').'";
 			var error_on_uploading 			= "'.$this->l('error_on_uploading').'";
-			var message_promt_delete_file 	= "'.$this->l('message_promt_delete_file').'";
+			var message_prompt_delete_file 	= "'.$this->l('message_prompt_delete_file').'";
 			
 			var error_max_number_of_files 	= "'.$this->l('error_max_number_of_files').'";
 			var error_accept_file_types 	= "'.$this->l('error_accept_file_types').'";
@@ -2870,8 +2870,6 @@ class grocery_CRUD extends grocery_CRUD_States
 	public function unset_list()
 	{
 		$this->unset_list = true;
-		
-		$this->unset_back_to_list();
 	
 		return $this;
 	}	
