@@ -453,7 +453,7 @@ class grocery_CRUD_Model  extends CI_Model  {
         switch ($this->db->dbdriver)
         {
             case "postgre": //$sql = "SELECT column_name AS \"Field\", udt_name||'(255)' AS \"Type\", is_nullable AS \"Null\", CASE WHEN ordinal_position = 1 THEN 'PRI' ELSE '' END AS \"Key\", column_default AS \"Default\", '' AS \"Extra\" FROM information_schema.columns WHERE table_name = '{$table_name}'";
-                $sql = "SELECT column_name AS \"Field\", data_type AS \"Type\", is_nullable AS \"Null\", CASE WHEN ordinal_position = 1 THEN 'PRI' ELSE '' END AS \"Key\", column_default AS \"Default\", '' AS \"Extra\" FROM information_schema.columns WHERE table_name = '{$this->table_name}'";
+                $sql = "SELECT column_name AS \"Field\", data_type AS \"Type\", is_nullable AS \"Null\", CASE WHEN ordinal_position = 1 THEN 'PRI' ELSE '' END AS \"Key\", column_default AS \"Default\", CASE column_default LIKE 'nextval%' WHEN TRUE THEN 'auto_increment' ELSE '' END AS \"Extra\" FROM information_schema.columns WHERE table_name = '{$this->table_name}'";
                 break;
             default: $sql = "SHOW COLUMNS FROM `{$this->table_name}`";
             /* MySQL also has: select COLUMN_NAME, COLUMN_DEFAULT, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, COLUMN_TYPE, COLUMN_KEY from information_schema.columns where table_name='traffic_mt_recovery_billing_table';
@@ -510,7 +510,8 @@ class grocery_CRUD_Model  extends CI_Model  {
     
     function get_field_types($table_name)
     {
-    	$results = $this->db->field_data($table_name);
+        $results = $this->get_field_types_basic_table($table_name);
+    	//$results = $this->db->field_data($table_name);
     	
     	return $results;
     }
@@ -593,8 +594,8 @@ class grocery_CRUD_Model  extends CI_Model  {
     	}
     	else
     	{
-	    	//$fields = $this->get_field_types($table_name);
-                $fields = $this->get_field_types_basic_table($table_name);
+	    	$fields = $this->get_field_types($table_name);
+                //$fields = $this->get_field_types_basic_table($table_name);
 	    	
 	    	foreach($fields as $field)
 	    	{
