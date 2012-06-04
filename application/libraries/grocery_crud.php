@@ -276,7 +276,7 @@ class grocery_CRUD_Field_Types
 				}
 			break;
 			case 'enum':
-				$value = $this->character_limiter($value,20,"...");
+				$value = $this->character_limiter($value,30,"...");
 			break;	
 			case 'relation_n_n':
 				$value = $this->character_limiter($value,30,"...");
@@ -1810,15 +1810,15 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 	}	
 
 	protected function get_enum_input($field_info,$value)
-	{		
+	{
 		$input = "<select name='{$field_info->name}'>";
-		$options_array = $field_info->extras !== false && is_array($field_info->extras)? $field_info->extras  : explode("','",substr($field_info->db_max_length,1,-1));
+		$options_array = $field_info->extras !== false && is_array($field_info->extras)? $field_info->extras : explode("','",substr($field_info->db_max_length,1,-1));
 		foreach($options_array as $option)
 		{
-			$selected = !empty($value) && $value == $option ? "selected='selected'" : ''; 
-			$input .= "<option value='$option' $selected >$option</option>";	
+			$selected = !empty($value) && $value == $option ? "selected='selected'" : '';
+			$input .= "<option value='$option' $selected >$option</option>";
 		}
-		
+	
 		$input .= "</select>";
 		return $input;
 	}
@@ -2760,6 +2760,18 @@ class grocery_CRUD extends grocery_CRUD_States
 		
 		return $this;
 	}
+	
+	/**
+	 *
+	 * Just an alias to the change_field_type method
+	 * @param string $field
+	 * @param string $type
+	 * @param array|string $extras
+	 */
+	public function field_type($field , $type, $extras = null)
+	{
+		return $this->change_field_type($field , $type, $extras);
+	}	
 	
 	/**
 	 * Unsets the texteditor of the selected fields
