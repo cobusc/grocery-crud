@@ -361,6 +361,9 @@ class grocery_CRUD_Field_Types
 					else
 						$type = 'integer';
 				break;
+                                case 'boolean': //JEC
+                                         $type = 'true_false';
+                                break;
 				case '254':
 				case 'string':
 				case 'enum':					
@@ -1712,9 +1715,11 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 	{
 		$input = "<input name='{$field_info->name}' type='text' value='$value' class='numeric' />";
 		
-		$checked = $value == 1 ? "checked = 'checked'" : "";
+		//$checked = $value == 1 ? "checked = 'checked'" : "";
+                $checked = ($value == 1 or $value == 't') ? "checked = 'checked'" : "";
 		$input = "<label><input type='radio' name='{$field_info->name}' value='1' $checked /> ".$this->default_true_false_text[1]."</label> ";
-		$checked = $value === '0' ? "checked = 'checked'" : ""; 
+		//$checked = $value === '0' ? "checked = 'checked'" : ""; 
+                $checked = ($value === '0' or $value == 'f') ? "checked = 'checked'" : "";
 		$input .= "<label><input type='radio' name='{$field_info->name}' value='0' $checked /> ".$this->default_true_false_text[0]."</label>";
 		
 		return $input;
