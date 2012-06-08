@@ -1713,15 +1713,13 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 	protected function get_true_false_input($field_info,$value)
 	{
 		$value_is_null = empty($value) || ($value !== '0' && $value !== 0 && $value !== 't' && $value !== 'f') ? true : false;
-                echo "Value_is_null: '$value_is_null'".PHP_EOL;
-                echo "Default: '$field_info->default'".PHP_EOL;
 		
 		$input = "<input name='{$field_info->name}' type='text' value='$value' class='numeric' />";
 		
-		$checked = $value === '1' || $value === 't' || ($value_is_null && ($field_info->default === '1' || $field_info->default === 't')) ? "checked = 'checked'" : "";
+		$checked = $value === '1' || $value === 't' || ($value_is_null && ($field_info->default === '1' || $field_info->default === 'true')) ? "checked = 'checked'" : "";
 		$input = "<label><input type='radio' name='{$field_info->name}' value='1' $checked /> ".$this->default_true_false_text[1]."</label> ";
 		
-		$checked = $value === '0' || $value === 'f' || ($value_is_null && ($field_info->default === '0' || $field_info->default === 'f')) ? "checked = 'checked'" : ""; 
+		$checked = $value === '0' || $value === 'f' || ($value_is_null && ($field_info->default === '0' || $field_info->default === 'false')) ? "checked = 'checked'" : ""; 
 		$input .= "<label><input type='radio' name='{$field_info->name}' value='0' $checked /> ".$this->default_true_false_text[0]."</label>";
 		
 		return $input;

@@ -483,6 +483,7 @@ class grocery_CRUD_Model  extends CI_Model  {
     		$db_field_types[$db_field_type->Field]['db_extra'] = $db_field_type->Extra;
                 //JEC: This seems to be needed
                 $db_field_types[$db_field_type->Field]['primary_key'] = $db_field_type->Key == 'PRI' ? true : false;
+                $db_field_types[$db_field_type->Field]['default'] = $db_field_type->Default;
                 //This is a hack. Should be handled properly in the library/grocery_crud.php file
                 $db_field_types[$db_field_type->Field]['type'] = $db_type;
     	}
