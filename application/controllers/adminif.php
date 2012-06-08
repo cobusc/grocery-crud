@@ -69,19 +69,19 @@ class AdminIf extends CI_Controller {
         }
 
 	
-        function spm_instance()
+/*        function spm_instance()
         {
             $output = $this->grocery_crud->render();
 
             $this->_example_output($output);    
-        }
+        }*/
 
         function spm_service()
         {
             $crud = new grocery_CRUD();
 
             $crud->set_relation('instance_id','spm_instance','short_hostname');
-            $crud->set_relation('svc_id','agg_svc_table','{name}');
+            $crud->set_relation('svc_id','agg_svc_table','name');
 
             $output = $crud->render();
 
@@ -101,14 +101,14 @@ class AdminIf extends CI_Controller {
             $this->_example_output($output);
         }
 
-        function spm_sms_bearer_config()
-        {
+       function spm_sms_bearer_config()
+       {
             $crud = new grocery_CRUD();
 
             $crud->set_relation('service_id','spm_service','name');
             $crud->set_relation('behaviour_id','spm_sms_behaviour','{name} {description}');
 
-            $output = $this->grocery_crud->render();
+            $output = $crud->render();
 
             $this->_example_output($output);
         }
