@@ -106,7 +106,7 @@ class AdminIf extends CI_Controller {
             $crud = new grocery_CRUD();
 
             $crud->set_relation('service_id','spm_service','name');
-            $crud->set_relation('behaviour_id','spm_sms_behaviour','{name} {description}');
+            $crud->set_relation('behaviour_id','spm_sms_behaviour','[{name}] {description}');
 
             $output = $crud->render();
 

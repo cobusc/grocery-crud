@@ -96,16 +96,11 @@ class grocery_CRUD_Model  extends CI_Model  {
                             switch ($this->db->dbdriver)
                             {
                                 case "postgre": 
-                                    $select .= 
-                                       ", '".
-                                       str_replace(array('{',
-                                                     '}'),
-                                               array("' || COALESCE({$unique_join_name}.\"",
-                                                     "\", '') || '"),
-                                               str_replace("'",
-                                                           "\\'",
-                                                           $related_field_title)).
-                                         "' as $unique_field_name";
+                                    $select .= ", '".
+                                       str_replace(array('{','}'),
+                                                   array("' || COALESCE({$unique_join_name}.\"", "\", '') || '"),
+                                                   str_replace("'", "\\'", $related_field_title)
+                                                  )."' as $unique_field_name";
                                     break; 
                                 default: $select .= ", CONCAT('".str_replace(array('{','}'),array("',COALESCE({$unique_join_name}.",", ''),'"),str_replace("'","\\'",$related_field_title))."') as $unique_field_name";
                             }
@@ -301,16 +296,12 @@ class grocery_CRUD_Model  extends CI_Model  {
             switch ($this->db->dbdriver)
             {
                 case "postgre":
-                    $select .=
-                                       str_replace(array('{',
-                                                     '}'),
-                                               array(" COALESCE(\"",
-                                                     "\", '') || "),
-                                               str_replace("'",
-                                                           "\\'",
-                                                           $related_field_title)).
-                                         "'' as $field_name_hash";
-                                    break;
+                    $select .= "'".
+                       str_replace(array('{','}'),
+                                   array("' || COALESCE(\"", "\", '') || '"),
+                                   str_replace("'", "\\'", $related_field_title)
+                                  )."' AS $field_name_hash";
+                    break;
                 default:
                     $select .= "CONCAT('".str_replace(array('{','}'),array("',COALESCE(",", ''),'"),str_replace("'","\\'",$related_field_title))."') as $field_name_hash";
             }
