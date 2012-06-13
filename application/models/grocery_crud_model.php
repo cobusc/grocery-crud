@@ -57,6 +57,7 @@ class grocery_CRUD_Model  extends CI_Model  {
 	protected $table_name = null;
 	protected $relation = array();
 	protected $relation_n_n = array();
+	protected $primary_keys = array();
 	
 	function __construct()
     {
@@ -91,6 +92,7 @@ class grocery_CRUD_Model  extends CI_Model  {
     			
 			if(strstr($related_field_title,'{'))
                         {
+                            $related_field_title = str_replace(" ","&nbsp;",$related_field_title);
                             switch ($this->db->dbdriver)
                             {
                                 case "postgre": 
@@ -133,6 +135,13 @@ class grocery_CRUD_Model  extends CI_Model  {
     	$results = $this->db->get($this->table_name)->result();
     	
     	return $results;
+    }
+    
+    public function set_primary_key($field_name, $table_name = null)
+    {
+    	$table_name = $table_name === null ? $this->table_name : $table_name;
+    	
+    	$this->primary_keys[$table_name] = $field_name;
     }
     
     protected function relation_n_n_queries($select)
@@ -288,6 +297,7 @@ class grocery_CRUD_Model  extends CI_Model  {
     	
     	if(strstr($related_field_title,'{'))
         {
+            $related_field_title = str_replace(" ", "&nbsp;", $related_field_title);
             switch ($this->db->dbdriver)
             {
                 case "postgre":
@@ -306,7 +316,9 @@ class grocery_CRUD_Model  extends CI_Model  {
             }
         }
     	else
+    	{
 	    	$select .= "$related_table.$related_field_title as $field_name_hash";
+    	}
     	
     	$this->db->select($select,false);
     	if($where_clause !== null)
@@ -575,6 +587,11 @@ class grocery_CRUD_Model  extends CI_Model  {
 
     	if($table_name == null)
     	{
+    		if(isset($this->primary_keys[$this->table_name]))
+    		{
+    			return $this->primary_keys[$this->table_name];
+    		}
+    		
 	    	if(empty($this->primary_key))
 	    	{
 		    	$fields = $this->get_field_types_basic_table();
@@ -595,6 +612,11 @@ class grocery_CRUD_Model  extends CI_Model  {
     	}
     	else
     	{
+    		if(isset($this->primary_keys[$table_name]))
+    		{
+    			return $this->primary_keys[$table_name];
+    		}
+    		
 	    	$fields = $this->get_field_types($table_name);
                 //$fields = $this->get_field_types_basic_table($table_name);
 	    	
