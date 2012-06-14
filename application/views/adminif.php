@@ -28,12 +28,12 @@ a:hover
 </head>
 <body>
     <div>
-        <a href='<?php echo site_url('adminif/index')?>'>INDEX</a>
+        <a href='<?php echo site_url('adminif/index')?>'>INDEX</a><br/><br/>
 
         <?php
         if (!empty($tables))  
         foreach ($tables as $table): ?>
-            | <a href='<?php echo site_url("adminif/$table")?>'><?php echo $table?></a>
+            | <a href='<?php echo site_url("adminif/$table")?>'><?php echo $table?></a><br/>
         <?php endforeach; ?>
 	</div>
 	<div style='height:20px;'></div>  

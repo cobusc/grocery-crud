@@ -24,10 +24,12 @@ class AdminIf extends CI_Controller {
 
 	function index()
 	{
+                $tableList = $this->db->list_tables();
+                sort($tableList);
 		$this->_example_output((object)array('output' => '' , 
                                                      'js_files' => array() , 
                                                      'css_files' => array(), 
-                                                     'tables' => $this->db->list_tables()
+                                                     'tables' => $tableList
                                                     )
                                       );
 	}	
