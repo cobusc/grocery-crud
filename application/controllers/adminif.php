@@ -14,7 +14,7 @@ class AdminIf extends CI_Controller {
 		$this->load->helper('url');
 		/* ------------------ */	
 		
-		$this->load->library('grocery_CRUD');	
+		$this->load->library('grocery_CRUD');
 	}
 	
 	function _example_output($output = null)
@@ -26,9 +26,14 @@ class AdminIf extends CI_Controller {
 	{
                 $tableList = $this->db->list_tables();
                 sort($tableList);
+                $default_javascript_path = base_url().'assets/grocery_crud/js';
+                $default_css_path = base_url().'assets/grocery_crud/css';
 		$this->_example_output((object)array('output' => '' , 
-                                                     'js_files' => array() , 
-                                                     'css_files' => array(), 
+                                                     'js_files' => array($default_javascript_path.'/jquery-1.7.1.min.js',
+                                                                         $default_javascript_path.'/jquery_plugins/jquery.chosen.min.js',
+                                                                         $default_javascript_path.'/jquery_plugins/ajax-chosen.js',
+                                                                         $default_javascript_path.'/jquery_plugins/config/jquery.chosen.config.js') , 
+                                                     'css_files' => array($default_css_path.'/jquery_plugins/chosen/chosen.css'), 
                                                      'tables' => $tableList
                                                     )
                                       );
