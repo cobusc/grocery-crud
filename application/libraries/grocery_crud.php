@@ -287,11 +287,35 @@ class grocery_CRUD_Field_Types
 			break;
 			
 			case 'upload_file':
-				$value = !empty($value) ? 
-							"<a href='".base_url().$field_info->extras->upload_path."/$value' target='_blank'>".
-								$this->character_limiter($value,20,"...",true).
-							"</a>":
-							"";
+				if(empty($value))
+				{
+					$value = "";
+				}
+				else
+				{
+					$is_image = !empty($value) &&
+					( substr($value,-4) == '.jpg'
+							|| substr($value,-4) == '.png'
+							|| substr($value,-5) == '.jpeg'
+							|| substr($value,-4) == '.gif'
+							|| substr($value,-5) == '.tiff')
+							? true : false;		
+								
+					$file_url = base_url().$field_info->extras->upload_path."/$value";
+					
+					$file_url_anchor = "<a href='".$file_url."' target='_blank'>";
+					if($is_image)
+					{
+						$file_url_anchor .= '<img src="'.$file_url.'" height="50" />';
+					}
+					else
+					{
+						$file_url_anchor .= $this->character_limiter($value,20,"...",true);
+					}
+					$file_url_anchor .= "</a>";
+					
+					$value = $file_url_anchor;
+				}
 			break;
 			
 			default:
@@ -356,6 +380,8 @@ class grocery_CRUD_Field_Types
 				case '3':
 				case 'int':
 				case 'tinyint':
+				case 'mediumint':
+				case 'longint':					
 					if( $db_type->db_type == 'tinyint' && $db_type->db_max_length ==  1)
 						$type = 'true_false';
 					else
@@ -381,6 +407,8 @@ class grocery_CRUD_Field_Types
 				case '252':
 				case 'blob':
 				case 'text':
+				case 'mediumtext':					
+				case 'longtext':
 					$type = 'text';
 				break;
 				case '10':
@@ -1419,6 +1447,7 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 		$this->set_echo_and_die();
 		
 		$total_results = (int)$this->get_total_results();
+		ob_end_clean();
 		echo json_encode(array('total_results' => $total_results));
 		die();
 	}
@@ -1524,6 +1553,7 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 	
 	protected function delete_layout($delete_result = true)
 	{
+		ob_end_clean();
 		if($delete_result === false)
 		{
 			$error_message = '<p>'.$this->l('delete_error_message').'</p>';
@@ -1560,6 +1590,7 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 	
 	protected function insert_layout($insert_result = false)
 	{
+		ob_end_clean();
 		if($insert_result === false)
 		{
 			echo json_encode(array('success' => false));	
@@ -1592,12 +1623,14 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 
 	protected function validation_layout($validation_result)
 	{
+		ob_end_clean();
 		echo "<textarea>".json_encode($validation_result)."</textarea>";
 		$this->set_echo_and_die();
 	}
 
 	protected function upload_layout($upload_result, $field_name)
 	{
+		ob_end_clean();
 		if($upload_result !== false && !is_string($upload_result) && empty($upload_result[0]->error))
 		{
 			echo json_encode(
@@ -1622,6 +1655,7 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 	
 	protected function delete_file_layout($upload_result)
 	{
+		ob_end_clean();
 		if($upload_result !== false)
 		{
 			echo json_encode( (object)array( 'success' => true ) );
@@ -1675,6 +1709,7 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 	
 	protected function update_layout($update_result = false, $state_info = null)
 	{
+		ob_end_clean();
 		if($update_result === false)
 		{
 			echo json_encode(array('success' => $update_result));	
@@ -2056,6 +2091,16 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 		$uploader_display_none 	= empty($value) ? "" : "display:none;";
 		$file_display_none  	= empty($value) ?  "display:none;" : "";
 		
+		$is_image = !empty($value) && 
+						( substr($value,-4) == '.jpg' 
+								|| substr($value,-4) == '.png' 
+								|| substr($value,-5) == '.jpeg' 
+								|| substr($value,-4) == '.gif' 
+								|| substr($value,-5) == '.tiff')
+					? true : false;
+		
+		$image_class = $is_image ? 'image-thumbnail' : '';
+		
 		$input = '<span class="fileinput-button qq-upload-button" id="upload-button-'.$unique.'" style="'.$uploader_display_none.'">
 			<span>'.$this->l('form_upload_a_file').'</span>
 			<input type="file" name="'.$this->_unique_field_name($field_info->name).'" class="gc-file-upload" rel="'.$this->getUploadUrl($field_info->name).'" id="'.$unique.'">
@@ -2064,9 +2109,13 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 		
 		$this->set_css($this->default_css_path.'/jquery_plugins/file_upload/fileuploader.css');
 		
+		$file_url = base_url().$field_info->extras->upload_path.'/'.$value;
+		
 		$input .= "<div id='uploader_$unique' rel='$unique' class='grocery-crud-uploader' style='$uploader_display_none'></div>";
 		$input .= "<div id='success_$unique' class='upload-success-url' style='$file_display_none padding-top:7px;'>";
-		$input .= "		<a href='".base_url().$field_info->extras->upload_path.'/'.$value."' class='open-file' target='_blank' id='file_$unique'>$value</a> ";
+		$input .= "		<a href='".$file_url."' class='open-file $image_class' target='_blank' id='file_$unique'>";
+		$input .= $is_image ? '<img height="50" src="'.$file_url.'"/>': "$value" ;
+		$input .= "</a> ";
 		$input .= "		<a href='javascript:void(0)' id='delete_$unique' class='delete-anchor'>".$this->l('form_upload_delete')."</a> ";
 		$input .= "</div><div style='clear:both'></div>";
 		$input .= "<div id='loading-$unique' style='display:none'><span id='upload-state-message-$unique'></span> <span class='qq-upload-spinner'></span> <span id='progress-$unique'></span></div>";
@@ -3614,7 +3663,7 @@ class grocery_CRUD extends grocery_CRUD_States
 				
 				$this->delete_file_layout($delete_file_result);
 			break;
-			
+			/*
 			case 13: //ajax_relation
 				$state_info = $this->getStateInfo();
 				
@@ -3629,7 +3678,8 @@ class grocery_CRUD extends grocery_CRUD_States
 			case 14: //ajax_relation_n_n
 				echo json_encode(array("34" => 'Johnny' , "78" => "Test"));
 				die();
-			break;			
+			break;
+			*/			
 			
 		}
 		
