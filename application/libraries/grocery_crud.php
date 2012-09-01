@@ -1,4 +1,4 @@
-<?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+<?php
 /**
  * PHP grocery CRUD
  *
@@ -1444,7 +1444,7 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 		$data->columns 				= $this->get_columns();
 		$data->primary_key 			= $this->get_primary_key();
 	
-		ob_end_clean();		
+		@ob_end_clean();		
 		$this->_export_to_excel($data);
 	}	
 	
@@ -1496,7 +1496,7 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 		$data->columns 				= $this->get_columns();
 		$data->primary_key 			= $this->get_primary_key();
 	
-		ob_end_clean();
+		@ob_end_clean();
 		$this->_print_webpage($data);
 	}	
 	
@@ -1563,7 +1563,7 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 		$this->set_echo_and_die();
 		
 		$total_results = (int)$this->get_total_results();
-		ob_end_clean();
+		@ob_end_clean();
 		echo json_encode(array('total_results' => $total_results));
 		die();
 	}
@@ -1669,7 +1669,7 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 	
 	protected function delete_layout($delete_result = true)
 	{
-		ob_end_clean();
+		@ob_end_clean();
 		if($delete_result === false)
 		{
 			$error_message = '<p>'.$this->l('delete_error_message').'</p>';
@@ -1706,7 +1706,7 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 	
 	protected function insert_layout($insert_result = false)
 	{
-		ob_end_clean();
+		@ob_end_clean();
 		if($insert_result === false)
 		{
 			echo json_encode(array('success' => false));	
@@ -1739,14 +1739,14 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 
 	protected function validation_layout($validation_result)
 	{
-		ob_end_clean();
+		@ob_end_clean();
 		echo "<textarea>".json_encode($validation_result)."</textarea>";
 		$this->set_echo_and_die();
 	}
 
 	protected function upload_layout($upload_result, $field_name)
 	{
-		ob_end_clean();
+		@ob_end_clean();
 		if($upload_result !== false && !is_string($upload_result) && empty($upload_result[0]->error))
 		{
 			echo json_encode(
@@ -1771,7 +1771,7 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 	
 	protected function delete_file_layout($upload_result)
 	{
-		ob_end_clean();
+		@ob_end_clean();
 		if($upload_result !== false)
 		{
 			echo json_encode( (object)array( 'success' => true ) );
@@ -1825,7 +1825,7 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 	
 	protected function update_layout($update_result = false, $state_info = null)
 	{
-		ob_end_clean();
+		@ob_end_clean();
 		if($update_result === false)
 		{
 			echo json_encode(array('success' => $update_result));	
@@ -4339,20 +4339,23 @@ class grocery_CRUD extends grocery_CRUD_States
 	}
 }
 
-$ci = &get_instance();
-$ci->load->library('Form_validation');
-
-class grocery_CRUD_Form_validation extends CI_Form_validation{
-
-	public $CI;
-	public $_field_data			= array();
-	public $_config_rules		= array();
-	public $_error_array		= array();
-	public $_error_messages		= array();
-	public $_error_prefix		= '<p>';
-	public $_error_suffix		= '</p>';
-	public $error_string		= '';
-	public $_safe_form_data		= FALSE;
+if(defined('CI_VERSION'))
+{
+	$ci = &get_instance();
+	$ci->load->library('Form_validation');
+	
+	class grocery_CRUD_Form_validation extends CI_Form_validation{
+	
+		public $CI;
+		public $_field_data			= array();
+		public $_config_rules		= array();
+		public $_error_array		= array();
+		public $_error_messages		= array();
+		public $_error_prefix		= '<p>';
+		public $_error_suffix		= '</p>';
+		public $error_string		= '';
+		public $_safe_form_data		= FALSE;
+	}
 }
 
 /*
