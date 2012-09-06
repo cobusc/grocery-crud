@@ -194,6 +194,19 @@ class grocery_CRUD_Model  extends CI_Model  {
     			 
     	    $primary_key_selection_table = $this->get_primary_key($selection_table);
     			 
+	    $field = "";
+	    $use_template = strpos($title_field_selection_table,'{') !== false;
+	    $field_name_hash = $this->_unique_field_name($title_field_selection_table);
+	    if($use_template)
+	    {
+	    	$title_field_selection_table = str_replace(" ", "&nbsp;", $title_field_selection_table);
+	    	$field .= "CONCAT('".str_replace(array('{','}'),array("',COALESCE(",", ''),'"),str_replace("'","\\'",$title_field_selection_table))."')";
+	    }
+	    else
+	    {
+	    	$field .= "$selection_table.$title_field_selection_table";
+	    }
+
     	    //Sorry Codeigniter but you cannot help me with the subquery!
             switch ($this->db->dbdriver)
             {
@@ -417,11 +430,28 @@ class grocery_CRUD_Model  extends CI_Model  {
     
     function get_relation_n_n_selection_array($primary_key_value, $field_info)
     {
-    	$selection_primary_key = $this->get_primary_key($field_info->selection_table);
+    	$select = "";    	
+    	$related_field_title = $field_info->title_field_selection_table;
+    	$use_template = strpos($related_field_title,'{') !== false;;
+    	$field_name_hash = $this->_unique_field_name($related_field_title);
+    	if($use_template)
+    	{
+    		$related_field_title = str_replace(" ", "&nbsp;", $related_field_title);
+    		$select .= "CONCAT('".str_replace(array('{','}'),array("',COALESCE(",", ''),'"),str_replace("'","\\'",$related_field_title))."') as $field_name_hash";
+    	}
+    	else
+    	{
+    		$select .= "$related_field_title as $field_name_hash";
+    	}
+    	$this->db->select('*, '.$select,false);
     	
+    	$selection_primary_key = $this->get_primary_key($field_info->selection_table);
+    	 
     	if(empty($field_info->priority_field_relation_table))
     	{
-    		$this->db->order_by("{$field_info->selection_table}.{$field_info->title_field_selection_table}");
+    		if(!$use_template){
+    			$this->db->order_by("{$field_info->selection_table}.{$field_info->title_field_selection_table}");
+    		}
     	}
     	else
     	{
@@ -429,32 +459,54 @@ class grocery_CRUD_Model  extends CI_Model  {
     	}
     	$this->db->where($field_info->primary_key_alias_to_this_table, $primary_key_value);
     	$this->db->join(
-    		$field_info->selection_table,
-    		"{$field_info->relation_table}.{$field_info->primary_key_alias_to_selection_table} = {$field_info->selection_table}.{$selection_primary_key}"
-    	);
+    			$field_info->selection_table,
+    			"{$field_info->relation_table}.{$field_info->primary_key_alias_to_selection_table} = {$field_info->selection_table}.{$selection_primary_key}"
+    		);
     	$results = $this->db->get($field_info->relation_table)->result();
-
+    	
     	$results_array = array();
     	foreach($results as $row)
     	{
-    		$results_array[$row->{$field_info->primary_key_alias_to_selection_table}] = $row->{$field_info->title_field_selection_table}; 
+    		$results_array[$row->{$field_info->primary_key_alias_to_selection_table}] = $row->{$field_name_hash};
     	}
-    	
+    			 
     	return $results_array;
     }
     
     function get_relation_n_n_unselected_array($field_info, $selected_values)
     {
-        $selection_primary_key = $this->get_primary_key($field_info->selection_table);
-       
-        $this->db->order_by("{$field_info->selection_table}.{$field_info->title_field_selection_table}");
+    	$use_where_clause = !empty($field_info->where_clause);
+    	
+    	$select = "";
+    	$related_field_title = $field_info->title_field_selection_table;
+    	$use_template = strpos($related_field_title,'{') !== false;
+    	$field_name_hash = $this->_unique_field_name($related_field_title);
+    	
+    	if($use_template)
+    	{
+    		$related_field_title = str_replace(" ", "&nbsp;", $related_field_title);
+    		$select .= "CONCAT('".str_replace(array('{','}'),array("',COALESCE(",", ''),'"),str_replace("'","\\'",$related_field_title))."') as $field_name_hash";
+    	}
+    	else
+    	{
+    		$select .= "$related_field_title as $field_name_hash";
+    	}
+    	$this->db->select('*, '.$select,false);
+    	
+    	if($use_where_clause){
+    		$this->db->where($field_info->where_clause);	
+    	}
+    	
+    	$selection_primary_key = $this->get_primary_key($field_info->selection_table);
+        if(!$use_template)
+        	$this->db->order_by("{$field_info->selection_table}.{$field_info->title_field_selection_table}");
         $results = $this->db->get($field_info->selection_table)->result();
 
         $results_array = array();
         foreach($results as $row)
         {
             if(!isset($selected_values[$row->$selection_primary_key]))
-                $results_array[$row->$selection_primary_key] = $row->{$field_info->title_field_selection_table};
+                $results_array[$row->$selection_primary_key] = $row->{$field_name_hash};
         }
         
         return $results_array;       
@@ -549,8 +601,7 @@ class grocery_CRUD_Model  extends CI_Model  {
                 //This is a hack. Should be handled properly in the library/grocery_crud.php file
                 $db_field_types[$db_field_type->Field]['type'] = $db_type;
     	}
-        //print_r($db_field_types);
-    	
+
     	$results = $this->db->field_data($this->table_name);
     	foreach($results as $num => $row)
     	{

@@ -1,12 +1,11 @@
 <?php  
-	if (!defined('BASEPATH')) exit('No direct script access allowed');
-
 	$this->set_css($this->default_theme_path.'/flexigrid/css/flexigrid.css');
-	$this->set_js($this->default_javascript_path.'/jquery-1.7.1.min.js');
+	$this->set_js($this->default_javascript_path.'/jquery-1.8.1.min.js');
 	$this->set_js($this->default_theme_path.'/flexigrid/js/cookies.js');
 	$this->set_js($this->default_theme_path.'/flexigrid/js/flexigrid.js');
 	$this->set_js($this->default_theme_path.'/flexigrid/js/jquery.form.js');
 	$this->set_js($this->default_theme_path.'/flexigrid/js/jquery.numeric.js');
+	$this->set_js($this->default_theme_path.'/flexigrid/js/jquery.printElement.min.js');
 	
 ?>
 <script type='text/javascript'>
@@ -19,6 +18,7 @@
 	var message_alert_delete = "<?php echo $this->l('alert_delete'); ?>";
 
 </script>
+<div id="hidden-operations"></div>
 <div id='report-error' class='report-div error'></div>
 <div id='report-success' class='report-div success report-list' <?php if($success_message !== null){?>style="display:block"<?php }?>>
 <?php if($success_message !== null){?>
@@ -30,13 +30,15 @@
 		<div class="ftitle">
 			&nbsp;
 		</div>
-		<div title="Minimize/Maximize Table" class="ptogtitle">
+		<div title="<?php echo $this->l('minimize_maximize');?>" class="ptogtitle">
 			<span></span>
 		</div>
 	</div>
 	<div id='main-table-box'>
-	<?php if(!$unset_add){?>
+	
+	<?php if(!$unset_add || !$unset_export || !$unset_print){?>
 	<div class="tDiv">
+		<?php if(!$unset_add){?>
 		<div class="tDiv2">
         	<a href='<?php echo $add_url?>' title='<?php echo $this->l('list_add'); ?> <?php echo $subject?>' class='add-anchor'>
 			<div class="fbutton">
@@ -48,27 +50,33 @@
 			<div class="btnseparator">
 			</div>
 		</div>
+		<?php }?>
 		<div class="tDiv3">
-        	<a class="export-anchor">
+			<?php if(!$unset_export) { ?>
+        	<a class="export-anchor" data-url="<?php echo $export_url; ?>" target="_blank">
 				<div class="fbutton">
 					<div>
-						<span class="export">Export</span>
+						<span class="export"><?php echo $this->l('list_export');?></span>
 					</div>
 				</div>
             </a>
 			<div class="btnseparator"></div>
-        	<a class="print-anchor">
+			<?php } ?>
+			<?php if(!$unset_print) { ?>
+        	<a class="print-anchor" data-url="<?php echo $print_url; ?>">
 				<div class="fbutton">
 					<div>
-						<span class="print">Print</span>
+						<span class="print"><?php echo $this->l('list_print');?></span>
 					</div>
 				</div>
             </a>
-			<div class="btnseparator"></div>						
+			<div class="btnseparator"></div>
+			<?php }?>						
 		</div>
 		<div class='clear'></div>
 	</div>
 	<?php }?>
+	
 	<div id='ajax_list'>
 		<?php echo $list_view?>
 	</div>

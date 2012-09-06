@@ -15,7 +15,7 @@ $(function(){
 		}
 	});
 	
-	$('#filtering_form').submit(function(){
+	$('#filtering_form').submit(function(){		
 		var crud_page =  parseInt($('#crud_page').val());
 		var last_page = parseInt($('#last-page-number').html());
 		
@@ -147,6 +147,51 @@ $(function(){
 		
 		return false;
 	});
+	
+	$('.export-anchor').click(function(){
+		var export_url = $(this).attr('data-url');
+		
+		var form_input_html = '';
+		$.each($('#filtering_form').serializeArray(), function(i, field) {
+		    form_input_html = form_input_html + '<input type="hidden" name="'+field.name+'" value="'+field.value+'">';
+		});
+		
+		var form_on_demand = $("<form/>").attr("id","export_form").attr("method","post").attr("target","_blank")
+								.attr("action",export_url).html(form_input_html);
+		
+		$('#hidden-operations').html(form_on_demand);
+		
+		$('#export_form').submit();
+	});
+	
+	$('.print-anchor').click(function(){
+		var print_url = $(this).attr('data-url');
+		
+		var form_input_html = '';
+		$.each($('#filtering_form').serializeArray(), function(i, field) {
+		    form_input_html = form_input_html + '<input type="hidden" name="'+field.name+'" value="'+field.value+'">';
+		});
+		
+		var form_on_demand = $("<form/>").attr("id","print_form").attr("method","post").attr("action",print_url).html(form_input_html);
+		
+		$('#hidden-operations').html(form_on_demand);
+		
+		var _this_button = $(this);
+		
+		$('#print_form').ajaxSubmit({
+			beforeSend: function(){
+				_this_button.find('.fbutton').addClass('loading');
+				_this_button.find('.fbutton>div').css('opacity','0.4');
+			},
+			complete: function(){
+				_this_button.find('.fbutton').removeClass('loading');
+				_this_button.find('.fbutton>div').css('opacity','1');
+			},
+			success: function(html_data){
+				$("<div/>").html(html_data).printElement();
+			}
+		});
+	});	
 	
 	$('#crud_page').numeric();
 	
