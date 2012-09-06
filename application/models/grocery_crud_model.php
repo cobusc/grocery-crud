@@ -193,18 +193,18 @@ class grocery_CRUD_Model  extends CI_Model  {
     	         $primary_key_alias_to_selection_table, $title_field_selection_table, $priority_field_relation_table) = array_values((array)$relation_n_n);
     			 
     	    $primary_key_selection_table = $this->get_primary_key($selection_table);
-    			 
-	    $field = "";
+    	
+  	    $field = "";
 	    $use_template = strpos($title_field_selection_table,'{') !== false;
 	    $field_name_hash = $this->_unique_field_name($title_field_selection_table);
 	    if($use_template)
 	    {
-	    	$title_field_selection_table = str_replace(" ", "&nbsp;", $title_field_selection_table);
+	        $title_field_selection_table = str_replace(" ", "&nbsp;", $title_field_selection_table);
 	    	$field .= "CONCAT('".str_replace(array('{','}'),array("',COALESCE(",", ''),'"),str_replace("'","\\'",$title_field_selection_table))."')";
 	    }
 	    else
 	    {
-	    	$field .= "$selection_table.$title_field_selection_table";
+	   	$field .= "$selection_table.$title_field_selection_table";
 	    }
 
     	    //Sorry Codeigniter but you cannot help me with the subquery!
@@ -212,14 +212,14 @@ class grocery_CRUD_Model  extends CI_Model  {
             {
                 case "postgre":
                     // PostgreSQL 9 provides the string_agg() function, which is a bit better than using array_agg() and array_to_string()
-                    $select .= ", (SELECT array_to_string(array_agg(DISTINCT $selection_table.$title_field_selection_table), ',') FROM $selection_table "
+                    $select .= ", (SELECT array_to_string(array_agg(DISTINCT $field), ',') FROM $selection_table "
                         ." LEFT JOIN $relation_table ON $relation_table.$primary_key_alias_to_selection_table = $selection_table.$primary_key_selection_table "
                         ."WHERE $relation_table.$primary_key_alias_to_this_table = {$this->table_name}.$this_table_primary_key GROUP BY $relation_table.$primary_key_alias_to_this_table) AS $field_name";
                     break;
                 default:
-                    $select .= ", (SELECT GROUP_CONCAT(DISTINCT $selection_table.$title_field_selection_table) FROM $selection_table "                                                                                                       
-                          ."LEFT JOIN $relation_table ON $relation_table.$primary_key_alias_to_selection_table = $selection_table.$primary_key_selection_table "                                                                             
-                          ."WHERE $relation_table.$primary_key_alias_to_this_table = `{$this->table_name}`.$this_table_primary_key GROUP BY $relation_table.$primary_key_alias_to_this_table) AS $field_name";
+                    $select .= ", (SELECT GROUP_CONCAT(DISTINCT $field) FROM $selection_table "                                                                                                                                                                                  
+                            ."LEFT JOIN $relation_table ON $relation_table.$primary_key_alias_to_selection_table = $selection_table.$primary_key_selection_table "                                                                                                               
+                            ."WHERE $relation_table.$primary_key_alias_to_this_table = `{$this->table_name}`.$this_table_primary_key GROUP BY $relation_table.$primary_key_alias_to_this_table) AS $field_name";
             }
     	}
 
@@ -454,6 +454,7 @@ class grocery_CRUD_Model  extends CI_Model  {
     		}
     	}
     	else
+<<<<<<< HEAD
     	{
     		$this->db->order_by("{$field_info->relation_table}.{$field_info->priority_field_relation_table}");
     	}
@@ -467,6 +468,21 @@ class grocery_CRUD_Model  extends CI_Model  {
     	$results_array = array();
     	foreach($results as $row)
     	{
+=======
+    	{
+    		$this->db->order_by("{$field_info->relation_table}.{$field_info->priority_field_relation_table}");
+    	}
+    	$this->db->where($field_info->primary_key_alias_to_this_table, $primary_key_value);
+    	$this->db->join(
+    			$field_info->selection_table,
+    			"{$field_info->relation_table}.{$field_info->primary_key_alias_to_selection_table} = {$field_info->selection_table}.{$selection_primary_key}"
+    		);
+    	$results = $this->db->get($field_info->relation_table)->result();
+    	
+    	$results_array = array();
+    	foreach($results as $row)
+    	{
+>>>>>>> 2f9003af36d249afdeb9ed1f0044ce721bb02f9e
     		$results_array[$row->{$field_info->primary_key_alias_to_selection_table}] = $row->{$field_name_hash};
     	}
     			 
