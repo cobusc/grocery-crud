@@ -1534,7 +1534,7 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 	protected function _trim_export_string($value)
 	{
 		$value = str_replace(array("&nbsp;","&amp;","&gt;","&lt;"),array(" ","&",">","<"),$value);
-		return  str_replace(array("\t","\n","\r"),"",$value);
+		return  strip_tags(str_replace(array("\t","\n","\r"),"",$value));
 	}
 	
 	protected function _trim_print_string($value)
@@ -1545,7 +1545,7 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 		if(str_replace(" ","",$value) == "")
 			$value = "&nbsp;";
 		
-		return $value;
+		return strip_tags($value);
 	}
 	
 	protected function set_echo_and_die()
@@ -2116,8 +2116,9 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 	protected function get_relation_n_n_input($field_info_type, $selected_values)
 	{	
 		$has_priority_field = !empty($field_info_type->extras->priority_field_relation_table) ? true : false;
+		$is_ie_7 = isset($_SERVER['HTTP_USER_AGENT']) && (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 7') !== false) ? true : false;
 		
-		if($has_priority_field)
+		if($has_priority_field || $is_ie_7)
 		{
 			$this->set_css($this->default_css_path.'/ui/simple/jquery-ui-1.8.23.custom.css');	
 			$this->set_css($this->default_css_path.'/jquery_plugins/ui.multiselect.css');
@@ -2144,8 +2145,8 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 		}
 		else
 		{
-			$css_class = $has_priority_field ? 'multiselect': 'chosen-multiple-select';
-			$width_style = $has_priority_field ? '' : 'width:510px;';
+			$css_class = $has_priority_field || $is_ie_7 ? 'multiselect': 'chosen-multiple-select';
+			$width_style = $has_priority_field || $is_ie_7 ? '' : 'width:510px;';
 
 			$select_title = str_replace('{field_display_as}',$field_info_type->display_as,$this->l('set_relation_title'));
 			$input = "<select id='field-{$field_info_type->name}' name='{$field_info_type->name}[]' multiple='multiple' size='8' class='$css_class' data-placeholder='$select_title' style='$width_style' >";
@@ -2934,12 +2935,13 @@ class grocery_CRUD extends grocery_CRUD_States
 	protected $callback_before_upload	= null;
 	protected $callback_after_upload	= null;
 	
-	protected $default_javascript_path				= 'assets/grocery_crud/js';
-	protected $default_css_path						= 'assets/grocery_crud/css';
-	protected $default_texteditor_path 				= 'assets/grocery_crud/texteditor';
-	protected $default_theme_path					= 'assets/grocery_crud/themes';
+	protected $default_javascript_path				= null; //autogenerate, please do not modify
+	protected $default_css_path						= null; //autogenerate, please do not modify
+	protected $default_texteditor_path 				= null; //autogenerate, please do not modify
+	protected $default_theme_path					= null; //autogenerate, please do not modify
 	protected $default_language_path				= 'assets/grocery_crud/languages';
 	protected $default_config_path					= 'assets/grocery_crud/config';
+	protected $default_assets_path					= 'assets/grocery_crud';
 	
 	/**
 	 * 
@@ -3654,6 +3656,8 @@ class grocery_CRUD extends grocery_CRUD_States
 		$ci = &get_instance();
 		$ci->load->config('grocery_crud');
 		
+		$this->config = (object)array();
+		
 		/** Initialize all the config variables into this object */
 		$this->config->default_language 	= $ci->config->item('grocery_crud_default_language');
 		$this->config->date_format 			= $ci->config->item('grocery_crud_date_format');
@@ -3663,6 +3667,13 @@ class grocery_CRUD extends grocery_CRUD_States
 		$this->config->default_text_editor	= $ci->config->item('grocery_crud_default_text_editor');
 		$this->config->text_editor_type		= $ci->config->item('grocery_crud_text_editor_type');
 		$this->config->character_limiter	= $ci->config->item('grocery_crud_character_limiter');
+		
+		/** Initialize default paths */
+		$this->default_javascript_path				= $this->default_assets_path.'/js';
+		$this->default_css_path						= $this->default_assets_path.'/css';
+		$this->default_texteditor_path 				= $this->default_assets_path.'/texteditor';
+		$this->default_theme_path					= $this->default_assets_path.'/themes';
+	
 		
 		$this->character_limiter = $this->config->character_limiter;
 		
