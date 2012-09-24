@@ -194,19 +194,18 @@ class grocery_CRUD_Model  extends CI_Model  {
     			 
     	    $primary_key_selection_table = $this->get_primary_key($selection_table);
     	
-	   $field = "";
-	   $use_template = strpos($title_field_selection_table,'{') !== false;
-	   $field_name_hash = $this->_unique_field_name($title_field_selection_table);
-	   if($use_template)
-	   {
+  	    $field = "";
+	    $use_template = strpos($title_field_selection_table,'{') !== false;
+	    $field_name_hash = $this->_unique_field_name($title_field_selection_table);
+	    if($use_template)
+	    {
 	        $title_field_selection_table = str_replace(" ", "&nbsp;", $title_field_selection_table);
 	    	$field .= "CONCAT('".str_replace(array('{','}'),array("',COALESCE(",", ''),'"),str_replace("'","\\'",$title_field_selection_table))."')";
-	   }
-	   else
-	   {
+	    }
+	    else
+	    {
 	   	$field .= "$selection_table.$title_field_selection_table";
-	   }
-
+	    }
 
     	    //Sorry Codeigniter but you cannot help me with the subquery!
             switch ($this->db->dbdriver)
