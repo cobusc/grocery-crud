@@ -1,5 +1,4 @@
 <?php  
-	if (!defined('BASEPATH')) exit('No direct script access allowed');
 
 	$this->set_css($this->default_theme_path.'/flexigrid/css/flexigrid.css');
 	$this->set_js($this->default_theme_path.'/flexigrid/js/jquery.form.js');
@@ -18,7 +17,7 @@
 			</div>		
 			<div class='clear'></div>				
 		</div>
-		<div title="Minimize/Maximize Table" class="ptogtitle">
+		<div title="<?php echo $this->l('minimize_maximize');?>" class="ptogtitle">
 			<span></span>
 		</div>	
 	</div>

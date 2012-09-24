@@ -1473,7 +1473,7 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 		
 		$filename = "export-".date("Y-m-d_H:i:s").".xls";
 		
-		header('Content-type: application/ms-excel;charset=UTF-16LE');
+		header('Content-type: application/vnd.ms-excel;charset=UTF-16LE');
 		header('Content-Disposition: attachment; filename='.$filename);		
 		header("Cache-Control: no-cache");
 		echo $string_to_export;
@@ -1534,7 +1534,7 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 	protected function _trim_export_string($value)
 	{
 		$value = str_replace(array("&nbsp;","&amp;","&gt;","&lt;"),array(" ","&",">","<"),$value);
-		return  str_replace(array("\t","\n","\r"),"",$value);
+		return  strip_tags(str_replace(array("\t","\n","\r"),"",$value));
 	}
 	
 	protected function _trim_print_string($value)
@@ -1545,7 +1545,7 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 		if(str_replace(" ","",$value) == "")
 			$value = "&nbsp;";
 		
-		return $value;
+		return strip_tags($value);
 	}
 	
 	protected function set_echo_and_die()
@@ -1623,7 +1623,7 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 	
 	protected function showAddForm()
 	{
-		$this->set_js($this->default_javascript_path.'/jquery-1.8.0.min.js');
+		$this->set_js($this->default_javascript_path.'/'.grocery_CRUD::JQUERY);
 		
 		$data 				= $this->get_common_data();
 		$data->types 		= $this->get_field_types();
@@ -1643,7 +1643,7 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 	
 	protected function showEditForm($state_info)
 	{
-		$this->set_js($this->default_javascript_path.'/jquery-1.8.0.min.js');
+		$this->set_js($this->default_javascript_path.'/'.grocery_CRUD::JQUERY);
 		
 		$data 				= $this->get_common_data();
 		$data->types 		= $this->get_field_types();
@@ -1810,7 +1810,13 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 		$css_files =  $this->get_css_files();
 
 		if($this->unset_jquery)
-			unset($js_files[sha1($this->default_javascript_path.'/jquery-1.8.0.min.js')]);
+			unset($js_files[sha1($this->default_javascript_path.'/'.grocery_CRUD::JQUERY)]);
+		
+		if($this->unset_jquery_ui)
+		{
+			unset($css_files[sha1($this->default_css_path.'/ui/simple/'.grocery_CRUD::JQUERY_UI_CSS)]);
+			unset($js_files[sha1($this->default_javascript_path.'/jquery_plugins/ui/'.grocery_CRUD::JQUERY_UI_JS)]);
+		}
 		
 		if($this->echo_and_die === false)
 		{
@@ -1926,10 +1932,10 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 	
 	protected function get_datetime_input($field_info,$value)
 	{
-		$this->set_css($this->default_css_path.'/ui/simple/jquery-ui-1.8.23.custom.css');
+		$this->set_css($this->default_css_path.'/ui/simple/'.grocery_CRUD::JQUERY_UI_CSS);
 		$this->set_css($this->default_css_path.'/jquery_plugins/jquery.ui.datetime.css');
 		$this->set_css($this->default_css_path.'/jquery_plugins/jquery-ui-timepicker-addon.css');
-		$this->set_js($this->default_javascript_path.'/jquery_plugins/ui/jquery-ui-1.8.23.custom.min.js');
+		$this->set_js($this->default_javascript_path.'/jquery_plugins/ui/'.grocery_CRUD::JQUERY_UI_JS);
 		$this->set_js($this->default_javascript_path.'/jquery_plugins/jquery-ui-timepicker-addon.js');
 		
 		if($this->language !== 'english')
@@ -1989,8 +1995,8 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 	
 	protected function get_date_input($field_info,$value)
 	{	
-		$this->set_css($this->default_css_path.'/ui/simple/jquery-ui-1.8.23.custom.css');
-		$this->set_js($this->default_javascript_path.'/jquery_plugins/ui/jquery-ui-1.8.23.custom.min.js');
+		$this->set_css($this->default_css_path.'/ui/simple/'.grocery_CRUD::JQUERY_UI_CSS);
+		$this->set_js($this->default_javascript_path.'/jquery_plugins/ui/'.grocery_CRUD::JQUERY_UI_JS);
 		
 		if($this->language !== 'english')
 		{
@@ -2116,12 +2122,13 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 	protected function get_relation_n_n_input($field_info_type, $selected_values)
 	{	
 		$has_priority_field = !empty($field_info_type->extras->priority_field_relation_table) ? true : false;
+		$is_ie_7 = isset($_SERVER['HTTP_USER_AGENT']) && (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 7') !== false) ? true : false;
 		
-		if($has_priority_field)
+		if($has_priority_field || $is_ie_7)
 		{
-			$this->set_css($this->default_css_path.'/ui/simple/jquery-ui-1.8.23.custom.css');	
+			$this->set_css($this->default_css_path.'/ui/simple/'.grocery_CRUD::JQUERY_UI_CSS);	
 			$this->set_css($this->default_css_path.'/jquery_plugins/ui.multiselect.css');
-			$this->set_js($this->default_javascript_path.'/jquery_plugins/ui/jquery-ui-1.8.23.custom.min.js');	
+			$this->set_js($this->default_javascript_path.'/jquery_plugins/ui/'.grocery_CRUD::JQUERY_UI_JS);	
 			$this->set_js($this->default_javascript_path.'/jquery_plugins/ui.multiselect.js');
 			$this->set_js($this->default_javascript_path.'/jquery_plugins/config/jquery.multiselect.js');
 		}
@@ -2144,8 +2151,8 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 		}
 		else
 		{
-			$css_class = $has_priority_field ? 'multiselect': 'chosen-multiple-select';
-			$width_style = $has_priority_field ? '' : 'width:510px;';
+			$css_class = $has_priority_field || $is_ie_7 ? 'multiselect': 'chosen-multiple-select';
+			$width_style = $has_priority_field || $is_ie_7 ? '' : 'width:510px;';
 
 			$select_title = str_replace('{field_display_as}',$field_info_type->display_as,$this->l('set_relation_title'));
 			$input = "<select id='field-{$field_info_type->name}' name='{$field_info_type->name}[]' multiple='multiple' size='8' class='$css_class' data-placeholder='$select_title' style='$width_style' >";
@@ -2185,11 +2192,11 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 	
 	protected function get_upload_file_input($field_info, $value)
 	{
-		$this->set_css($this->default_css_path.'/ui/simple/jquery-ui-1.8.23.custom.css');
+		$this->set_css($this->default_css_path.'/ui/simple/'.grocery_CRUD::JQUERY_UI_CSS);
 		$this->set_css($this->default_css_path.'/jquery_plugins/file_upload/file-uploader.css');
 		$this->set_css($this->default_css_path.'/jquery_plugins/file_upload/jquery.fileupload-ui.css');
 
-		$this->set_js($this->default_javascript_path.'/jquery_plugins/ui/jquery-ui-1.8.23.custom.min.js');
+		$this->set_js($this->default_javascript_path.'/jquery_plugins/ui/'.grocery_CRUD::JQUERY_UI_JS);
 		$this->set_js($this->default_javascript_path.'/jquery_plugins/tmpl.min.js');
 		$this->set_js($this->default_javascript_path.'/jquery_plugins/load-image.min.js');
 
@@ -2848,7 +2855,7 @@ class grocery_CRUD_States extends grocery_CRUD_Layout
 /**
  * PHP grocery CRUD
  *
- * Creates a full functional CRUD
+ * Creates a full functional CRUD with few lines of code.
  *
  * @package    	grocery CRUD 
  * @author     	John Skoumbourdis <scoumbourdisj@gmail.com>
@@ -2857,7 +2864,16 @@ class grocery_CRUD_States extends grocery_CRUD_Layout
  */
 class grocery_CRUD extends grocery_CRUD_States
 {
+	/**
+	 * Grocery CRUD version
+	 * 
+	 * @var	string
+	 */
 	const	VERSION = "1.3";
+	
+	const	JQUERY = "jquery-1.8.1.min.js";
+	const	JQUERY_UI_JS = "jquery-ui-1.8.23.custom.min.js";
+	const	JQUERY_UI_CSS = "jquery-ui-1.8.23.custom.css";
 	
 	private $state_code 			= null;
 	private $state_info 			= null;
@@ -2909,6 +2925,7 @@ class grocery_CRUD extends grocery_CRUD_States
 	protected $unset_edit			= false;
 	protected $unset_delete			= false;
 	protected $unset_jquery			= false;
+	protected $unset_jquery_ui		= false;
 	protected $unset_list			= false;
 	protected $unset_export			= false;
 	protected $unset_print			= false;
@@ -2934,12 +2951,13 @@ class grocery_CRUD extends grocery_CRUD_States
 	protected $callback_before_upload	= null;
 	protected $callback_after_upload	= null;
 	
-	protected $default_javascript_path				= 'assets/grocery_crud/js';
-	protected $default_css_path						= 'assets/grocery_crud/css';
-	protected $default_texteditor_path 				= 'assets/grocery_crud/texteditor';
-	protected $default_theme_path					= 'assets/grocery_crud/themes';
+	protected $default_javascript_path				= null; //autogenerate, please do not modify
+	protected $default_css_path						= null; //autogenerate, please do not modify
+	protected $default_texteditor_path 				= null; //autogenerate, please do not modify
+	protected $default_theme_path					= null; //autogenerate, please do not modify
 	protected $default_language_path				= 'assets/grocery_crud/languages';
 	protected $default_config_path					= 'assets/grocery_crud/config';
+	protected $default_assets_path					= 'assets/grocery_crud';
 	
 	/**
 	 * 
@@ -3080,6 +3098,21 @@ class grocery_CRUD extends grocery_CRUD_States
 		
 		return $this;
 	}
+	
+	
+	/**
+	 * Unsets the jquery UI Javascript and CSS. This function is really useful 
+	 * when the jquery UI JavaScript and CSS are already included in the main template. 
+	 * This will avoid all jquery UI conflicts.
+	 *
+	 * @return	void
+	 */
+	public function unset_jquery_ui()
+	{
+		$this->unset_jquery_ui = true;
+	
+		return $this;
+	}	
 	
 	/**
 	 * Unsets the add operation from the list
@@ -3654,6 +3687,8 @@ class grocery_CRUD extends grocery_CRUD_States
 		$ci = &get_instance();
 		$ci->load->config('grocery_crud');
 		
+		$this->config = (object)array();
+		
 		/** Initialize all the config variables into this object */
 		$this->config->default_language 	= $ci->config->item('grocery_crud_default_language');
 		$this->config->date_format 			= $ci->config->item('grocery_crud_date_format');
@@ -3663,6 +3698,13 @@ class grocery_CRUD extends grocery_CRUD_States
 		$this->config->default_text_editor	= $ci->config->item('grocery_crud_default_text_editor');
 		$this->config->text_editor_type		= $ci->config->item('grocery_crud_text_editor_type');
 		$this->config->character_limiter	= $ci->config->item('grocery_crud_character_limiter');
+		
+		/** Initialize default paths */
+		$this->default_javascript_path				= $this->default_assets_path.'/js';
+		$this->default_css_path						= $this->default_assets_path.'/css';
+		$this->default_texteditor_path 				= $this->default_assets_path.'/texteditor';
+		$this->default_theme_path					= $this->default_assets_path.'/themes';
+	
 		
 		$this->character_limiter = $this->config->character_limiter;
 		

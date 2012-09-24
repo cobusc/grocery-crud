@@ -1,13 +1,12 @@
 <?php  
-	if (!defined('BASEPATH')) exit('No direct script access allowed');
 	
 	$this->set_css($this->default_theme_path.'/datatables/css/demo_table_jui.css');
-	$this->set_css($this->default_css_path.'/ui/simple/jquery-ui-1.8.23.custom.css');
+	$this->set_css($this->default_css_path.'/ui/simple/'.grocery_CRUD::JQUERY_UI_CSS);
 	$this->set_css($this->default_theme_path.'/datatables/css/datatables.css');	
 	$this->set_css($this->default_theme_path.'/datatables/css/jquery.dataTables.css');
 	$this->set_css($this->default_theme_path.'/datatables/extras/TableTools/media/css/TableTools.css');
-	$this->set_js($this->default_javascript_path.'/jquery-1.8.0.min.js');
-	$this->set_js($this->default_javascript_path.'/jquery_plugins/ui/jquery-ui-1.8.23.custom.min.js');
+	$this->set_js($this->default_javascript_path.'/'.grocery_CRUD::JQUERY);
+	$this->set_js($this->default_javascript_path.'/jquery_plugins/ui/'.grocery_CRUD::JQUERY_UI_JS);
 	$this->set_js($this->default_theme_path.'/datatables/js/jquery.dataTables.min.js');
 	$this->set_js($this->default_theme_path.'/datatables/js/datatables.js');
 	$this->set_js($this->default_theme_path.'/datatables/extras/TableTools/media/js/ZeroClipboard.js');
@@ -17,6 +16,8 @@
 	var base_url = '<?php echo base_url();?>';
 	var subject = '<?php echo $subject?>';
 
+	var unique_hash = '<?php echo $unique_hash; ?>';
+	
 	var displaying_paging_string = "<?php echo str_replace( array('{start}','{end}','{results}'),
 		array('_START_', '_END_', '_TOTAL_'),
 		$this->l('list_displaying')
@@ -41,6 +42,9 @@
 	var unset_export = <?php echo ($unset_export ? 'true' : 'false'); ?>;
 	var unset_print = <?php echo ($unset_print ? 'true' : 'false'); ?>;
 
+	var export_text = '<?php echo $this->l('list_export');?>';
+	var print_text = '<?php echo $this->l('list_print');?>';
+	
 	<?php
 	//A work around for method order_by that doesn't work correctly on datatables theme
 	//@todo remove PHP logic from the view to the basic library 
