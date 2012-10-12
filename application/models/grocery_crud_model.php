@@ -454,7 +454,6 @@ class grocery_CRUD_Model  extends CI_Model  {
     		}
     	}
     	else
-<<<<<<< HEAD
     	{
     		$this->db->order_by("{$field_info->relation_table}.{$field_info->priority_field_relation_table}");
     	}
@@ -468,21 +467,6 @@ class grocery_CRUD_Model  extends CI_Model  {
     	$results_array = array();
     	foreach($results as $row)
     	{
-=======
-    	{
-    		$this->db->order_by("{$field_info->relation_table}.{$field_info->priority_field_relation_table}");
-    	}
-    	$this->db->where($field_info->primary_key_alias_to_this_table, $primary_key_value);
-    	$this->db->join(
-    			$field_info->selection_table,
-    			"{$field_info->relation_table}.{$field_info->primary_key_alias_to_selection_table} = {$field_info->selection_table}.{$selection_primary_key}"
-    		);
-    	$results = $this->db->get($field_info->relation_table)->result();
-    	
-    	$results_array = array();
-    	foreach($results as $row)
-    	{
->>>>>>> 2f9003af36d249afdeb9ed1f0044ce721bb02f9e
     		$results_array[$row->{$field_info->primary_key_alias_to_selection_table}] = $row->{$field_name_hash};
     	}
     			 
@@ -625,7 +609,8 @@ class grocery_CRUD_Model  extends CI_Model  {
                 //This is a hack. Should be handled properly in the library/grocery_crud.php file
                 $db_field_types[$db_field_type->Field]['type'] = $db_type;
     	}
-
+        //print_r($db_field_types);
+    	
     	$results = $this->db->field_data($this->table_name);
     	foreach($results as $num => $row)
     	{
