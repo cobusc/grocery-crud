@@ -343,26 +343,22 @@ class grocery_CRUD_Field_Types
 	 * @param	string	the end character. Usually an ellipsis
 	 * @return	string
 	 */
-	function character_limiter($str, $n = 500, $end_char = '&#8230;', $force = false)
+	function character_limiter($str, $n = 500, $end_char = '&#8230;')
 	{
 		if (strlen($str) < $n)
 		{
 			return $str;
 		}
 
-		if($force === true)
-		{
-			return substr($str,0,$n).$end_char;
-		}
-		
-		$str = preg_replace("/\s+/", ' ', str_replace(array("\r\n", "\r", "\n"), ' ', $str));
+		// a bit complicated, but faster than preg_replace with \s+
+		$str = preg_replace('/ {2,}/', ' ', str_replace(array("\r", "\n", "\t", "\x0B", "\x0C"), ' ', $str));
 
 		if (strlen($str) <= $n)
 		{
 			return $str;
 		}
 
-		$out = "";
+		$out = '';
 		foreach (explode(' ', trim($str)) as $val)
 		{
 			$out .= $val.' ';
@@ -370,7 +366,7 @@ class grocery_CRUD_Field_Types
 			if (strlen($out) >= $n)
 			{
 				$out = trim($out);
-				return (strlen($out) == strlen($str)) ? $out : $out.$end_char;
+				return (strlen($out) === strlen($str)) ? $out : $out.$end_char;
 			}
 		}
 	}
@@ -954,6 +950,13 @@ class grocery_CRUD_Model_Driver extends grocery_CRUD_Field_Types
 				{
 					foreach($this->relation_n_n as $field_name => $field_info)
 					{
+						if (   $this->unset_edit_fields !== null 
+							&& is_array($this->unset_edit_fields) 
+							&& in_array($field_name,$this->unset_edit_fields)
+						) {
+								continue;
+						}
+						
 						$relation_data = isset( $post_data[$field_name] ) ? $post_data[$field_name] : array() ; 
 						$this->db_relation_n_n_update($field_info, $relation_data ,$primary_key);
 					}
@@ -1883,7 +1886,7 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 	
 	protected function get_integer_input($field_info,$value)
 	{
-		$this->set_js($this->default_javascript_path.'/jquery_plugins/jquery.numeric.js');
+		$this->set_js($this->default_javascript_path.'/jquery_plugins/jquery.numeric.min.js');
 		$this->set_js($this->default_javascript_path.'/jquery_plugins/config/jquery.numeric.config.js');
 		$extra_attributes = '';
 		if(!empty($field_info->db_max_length))
@@ -2209,8 +2212,21 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 			$this->set_css($this->default_css_path.'/ui/simple/'.grocery_CRUD::JQUERY_UI_CSS);	
 			$this->set_css($this->default_css_path.'/jquery_plugins/ui.multiselect.css');
 			$this->set_js($this->default_javascript_path.'/jquery_plugins/ui/'.grocery_CRUD::JQUERY_UI_JS);	
-			$this->set_js($this->default_javascript_path.'/jquery_plugins/ui.multiselect.js');
+			$this->set_js($this->default_javascript_path.'/jquery_plugins/ui.multiselect.min.js');
 			$this->set_js($this->default_javascript_path.'/jquery_plugins/config/jquery.multiselect.js');
+
+			if($this->language !== 'english')
+			{
+				include($this->default_config_path.'/language_alias.php');
+				if(array_key_exists($this->language, $language_alias))
+				{
+					$i18n_date_js_file = $this->default_javascript_path.'/jquery_plugins/ui/i18n/multiselect/ui-multiselect-'.$language_alias[$this->language].'.js';
+					if(file_exists($i18n_date_js_file))
+					{
+						$this->set_js($i18n_date_js_file);
+					}
+				}
+			}
 		}
 		else 
 		{
@@ -2316,11 +2332,12 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 			var error_max_number_of_files 	= "'.$this->l('error_max_number_of_files').'";
 			var error_accept_file_types 	= "'.$this->l('error_accept_file_types').'";
 			var error_max_file_size 		= "'.str_replace("{max_file_size}",$max_file_size_ui,$this->l('error_max_file_size')).'";
-			var error_min_file_size 		= "'.$this->l('error_min_file_size').'";				
-		');		
-		
-		
-		
+			var error_min_file_size 		= "'.$this->l('error_min_file_size').'";
+
+			var base_url = "'.base_url().'";
+			var upload_a_file_string = "'.$this->l('form_upload_a_file').'";			
+		');
+
 		$uploader_display_none 	= empty($value) ? "" : "display:none;";
 		$file_display_none  	= empty($value) ?  "display:none;" : "";
 		
