@@ -308,7 +308,7 @@ class grocery_CRUD_Field_Types
 								
 					$file_url = base_url().$field_info->extras->upload_path."/$value";
 					
-					$file_url_anchor = "<a href='".$file_url."' target='_blank'>";
+					$file_url_anchor = "<a href='".$file_url."' target='_blank' class='image-thumbnail'>";
 					if($is_image)
 					{
 						$file_url_anchor .= '<img src="'.$file_url.'" height="50" />';
@@ -3729,46 +3729,60 @@ class grocery_CRUD extends grocery_CRUD_States
 		return $this->edit_fields;
 	}		
 	
-	public function order_by($order_by, $direction = '')
+	public function order_by($order_by, $direction = 'asc')
 	{
-		if($direction == '')
-			$direction = 'asc';
 		$this->order_by = array($order_by,$direction);
+
+		return $this;
 	}
 	
 	public function where($key, $value = NULL, $escape = TRUE)
 	{
 		$this->where[] = array($key,$value,$escape);
+
+		return $this;
 	}
 	
 	public function or_where($key, $value = NULL, $escape = TRUE)
 	{
 		$this->or_where[] = array($key,$value,$escape);
+
+		return $this;
 	}	
 	
 	public function like($field, $match = '', $side = 'both')
 	{
 		$this->like[] = array($field, $match, $side);
+
+		return $this;
 	}
 
 	protected function having($key, $value = '', $escape = TRUE)
 	{
 		$this->having[] = array($key, $value, $escape);
+
+		return $this;
 	}
 	
 	protected function or_having($key, $value = '', $escape = TRUE)
 	{
 		$this->or_having[] = array($key, $value, $escape);
+
+		return $this;
 	}	
 	
 	public function or_like($field, $match = '', $side = 'both')
 	{
 		$this->or_like[] = array($field, $match, $side);
+
+		return $this;
 	}	
 
 	public function limit($limit, $offset = '')
 	{
 		$this->limit = array($limit,$offset);
+
+		return $this;
 	}
 	
 	protected function _initialize_helpers()
@@ -3851,7 +3865,6 @@ class grocery_CRUD extends grocery_CRUD_States
 	 * Or else ... make it work! The web application takes decision of what to do and show it to the final user.
 	 * Without this function nothing works. Here is the core of grocery CRUD project.
 	 * 
-	 * @return void
 	 * @access	public
 	 */
 	public function render()
@@ -4475,6 +4488,8 @@ class grocery_CRUD extends grocery_CRUD_States
 	{
 		$upload_dir = substr($upload_dir,-1,1) == '/' ? substr($upload_dir,0,-1) : $upload_dir;
 		$this->upload_fields[$field_name] = (object)array( 'field_name' => $field_name , 'upload_path' => $upload_dir, 'encrypted_field_name' =>  $this->_unique_field_name($field_name));		
+
+		return $this;
 	}
 }
 

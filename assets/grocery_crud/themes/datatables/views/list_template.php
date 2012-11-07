@@ -8,9 +8,16 @@
 	$this->set_js($this->default_javascript_path.'/'.grocery_CRUD::JQUERY);
 	$this->set_js($this->default_javascript_path.'/jquery_plugins/ui/'.grocery_CRUD::JQUERY_UI_JS);
 	$this->set_js($this->default_theme_path.'/datatables/js/jquery.dataTables.min.js');
+	$this->set_js($this->default_theme_path.'/datatables/js/datatables-extras.js');
 	$this->set_js($this->default_theme_path.'/datatables/js/datatables.js');
 	$this->set_js($this->default_theme_path.'/datatables/extras/TableTools/media/js/ZeroClipboard.js');
 	$this->set_js($this->default_theme_path.'/datatables/extras/TableTools/media/js/TableTools.min.js');
+	
+	/** Fancybox */
+	$this->set_css($this->default_css_path.'/jquery_plugins/fancybox/jquery.fancybox.css');
+	$this->set_js($this->default_javascript_path.'/jquery_plugins/jquery.fancybox.pack.js');
+	$this->set_js($this->default_javascript_path.'/jquery_plugins/jquery.easing-1.3.pack.js');
+	$this->set_js($this->default_javascript_path.'/jquery_plugins/jquery.mousewheel-3.0.4.pack.js');	
 ?>
 <script type='text/javascript'>
 	var base_url = '<?php echo base_url();?>';
