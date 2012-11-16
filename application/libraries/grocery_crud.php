@@ -308,16 +308,16 @@ class grocery_CRUD_Field_Types
 								
 					$file_url = base_url().$field_info->extras->upload_path."/$value";
 					
-					$file_url_anchor = "<a href='".$file_url."' target='_blank' class='image-thumbnail'>";
+					$file_url_anchor = '<a href="'.$file_url.'"';
 					if($is_image)
 					{
-						$file_url_anchor .= '<img src="'.$file_url.'" height="50" />';
+						$file_url_anchor .= ' class="image-thumbnail"><img src="'.$file_url.'" height="50px">';
 					}
 					else
 					{
-						$file_url_anchor .= $this->character_limiter($value,$this->character_limiter,"...",true);
+						$file_url_anchor .= ' target="_blank">'.$this->character_limiter($value,$this->character_limiter,'...',true);
 					}
-					$file_url_anchor .= "</a>";
+					$file_url_anchor .= '</a>';
 					
 					$value = $file_url_anchor;
 				}
@@ -1256,6 +1256,7 @@ class grocery_CRUD_Model_Driver extends grocery_CRUD_Field_Types
 					'max_file_size'		=> $max_file_size_bytes
 				);
 				$upload_handler = new UploadHandler($options);
+				$upload_handler->default_config_path = $this->default_config_path;
 				$uploader_response = $upload_handler->post();
 				
 				if(is_array($uploader_response))
@@ -1848,6 +1849,16 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 		
 		if($this->echo_and_die === false)
 		{
+			/** Initialize JavaScript variables */
+			$js_vars =  array(
+					'default_javascript_path'	=> base_url().$this->default_javascript_path,
+					'default_css_path'			=> base_url().$this->default_css_path,
+					'default_texteditor_path'	=> base_url().$this->default_texteditor_path,
+					'default_theme_path'		=> base_url().$this->default_theme_path,
+					'base_url'				 	=> base_url()
+			);
+			$this->_add_js_vars($js_vars);			
+			
 			return (object)array('output' => $this->views_as_string, 'js_files' => $js_files, 'css_files' => $css_files);
 		}
 		elseif($this->echo_and_die === true)
@@ -2304,8 +2315,7 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 		$this->set_css($this->default_css_path.'/jquery_plugins/fancybox/jquery.fancybox.css');
 		
 		$this->set_js($this->default_javascript_path.'/jquery_plugins/jquery.fancybox.pack.js');
-		$this->set_js($this->default_javascript_path.'/jquery_plugins/jquery.easing-1.3.pack.js');
-		$this->set_js($this->default_javascript_path.'/jquery_plugins/jquery.mousewheel-3.0.4.pack.js');		
+		$this->set_js($this->default_javascript_path.'/jquery_plugins/jquery.easing-1.3.pack.js');	
 		$this->set_js($this->default_javascript_path.'/jquery_plugins/config/jquery.fancybox.config.js');		
 		
 		$unique = uniqid();
@@ -2363,10 +2373,10 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 		
 		$input .= "<div id='uploader_$unique' rel='$unique' class='grocery-crud-uploader' style='$uploader_display_none'></div>";
 		$input .= "<div id='success_$unique' class='upload-success-url' style='$file_display_none padding-top:7px;'>";
-		$input .= "		<a href='".$file_url."' class='open-file $image_class' target='_blank' id='file_$unique'>";
-		$input .= $is_image ? '<img height="50" src="'.$file_url.'"/>': "$value" ;
+		$input .= "<a href='".$file_url."' id='file_$unique' class='open-file";
+		$input .= $is_image ? " $image_class'><img src='".$file_url."' height='50px'>" : "' target='_blank'>$value";
 		$input .= "</a> ";
-		$input .= "		<a href='javascript:void(0)' id='delete_$unique' class='delete-anchor'>".$this->l('form_upload_delete')."</a> ";
+		$input .= "<a href='javascript:void(0)' id='delete_$unique' class='delete-anchor'>".$this->l('form_upload_delete')."</a> ";
 		$input .= "</div><div style='clear:both'></div>";
 		$input .= "<div id='loading-$unique' style='display:none'><span id='upload-state-message-$unique'></span> <span class='qq-upload-spinner'></span> <span id='progress-$unique'></span></div>";
 		$input .= "<div style='display:none'><a href='".$this->getUploadUrl($field_info->name)."' id='url_$unique'></a></div>";
@@ -2532,6 +2542,16 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 	{
 		$this->views_as_string .= "<script type=\"text/javascript\">\n{$inline_js}\n</script>\n";
 	}
+	
+	protected function _add_js_vars($js_vars = array())
+	{
+		$javascript_as_string = "<script type=\"text/javascript\">\n";
+		foreach ($js_vars as $js_var => $js_value) {
+			$javascript_as_string .= "\tvar $js_var = '$js_value';\n";
+		}
+		$javascript_as_string .= "\n</script>\n";
+		$this->views_as_string .= $javascript_as_string;
+	}	
 	
 	protected function get_views_as_string()
 	{
@@ -2943,7 +2963,7 @@ class grocery_CRUD_States extends grocery_CRUD_Layout
  * @package    	grocery CRUD
  * @copyright  	Copyright (c) 2010 through 2012, John Skoumbourdis
  * @license    	https://github.com/scoumbourdis/grocery-crud/blob/master/license-grocery-crud.txt
- * @version    	1.3
+ * @version    	1.3.3
  * @author     	John Skoumbourdis <scoumbourdisj@gmail.com> 
  */
 
@@ -2966,7 +2986,7 @@ class grocery_CRUD extends grocery_CRUD_States
 	 * 
 	 * @var	string
 	 */
-	const	VERSION = "1.3";
+	const	VERSION = "1.3.3";
 	
 	const	JQUERY 			= "jquery-1.8.2.min.js";
 	const	JQUERY_UI_JS 	= "jquery-ui-1.9.0.custom.min.js";
@@ -4526,6 +4546,7 @@ if(defined('CI_VERSION'))
 class UploadHandler
 {
     private $options;
+    public $default_config_path = null;
     
     function __construct($options=null) {
         $this->options = array(
@@ -4707,10 +4728,24 @@ class UploadHandler
         }
 
         //Ensure that we don't have disallowed characters and add a unique id just to ensure that the file name will be unique
-        $file_name = substr(uniqid(),-5).'-'.preg_replace("/([^a-zA-Z0-9\.\-\_]+?){1}/i", '-', $file_name);
+        $file_name = substr(uniqid(),-5).'-'.$this->_transliterate_characters($file_name);
 
+        //all the characters has to be lowercase
+        $file_name = strtolower($file_name);
+        
         return $file_name;
     }
+
+    private function _transliterate_characters($file_name)
+	{
+		include($this->default_config_path.'/translit_chars.php');
+		if ( ! isset($translit_characters))
+		{
+			return preg_replace("/([^a-zA-Z0-9\.\-\_]+?){1}/i", '-', $file_name);
+		}
+		$transformed_file_name = preg_replace(array_keys($translit_characters), array_values($translit_characters), $file_name);
+		return str_replace(" ", "-", $transformed_file_name);
+	}
 
     private function orient_image($file_path) {
       	$exif = exif_read_data($file_path);
