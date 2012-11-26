@@ -1450,8 +1450,6 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 		if(!$ajax)
 		{
 			$data->list_view = $this->_theme_view('list.php',$data,true);
-			$this->set_js_lib($this->default_javascript_path.'/common/lazyload-min.js');
-			$this->set_js_lib($this->default_javascript_path.'/common/list.js');
 			$this->_theme_view('list_template.php',$data);	
 		}
 		else
@@ -2984,8 +2982,14 @@ class grocery_CRUD_States extends grocery_CRUD_Layout
 			break;
 			
 			case 9:
-			case 10:
 				
+			break;
+			
+			case 10:
+				if($first_parameter !== null)
+				{
+					$state_info = (object)array('primary_key' => $first_parameter);
+				}
 			break;
 
 			case 11:
