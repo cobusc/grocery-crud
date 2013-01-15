@@ -126,8 +126,15 @@ class grocery_CRUD_Field_Types
 			{
 				$field_name = isset($field_object->field_name) ? $field_object->field_name : $field_object;
 				
-				if(!isset($types[$field_name]))
+				if(!isset($types[$field_name]))//Doesn't exist in the database? Create it for the CRUD
 				{
+					$extras = false;
+					if($this->change_field_type !== null && isset($this->change_field_type[$field_name]))
+					{
+						$field_type = $this->change_field_type[$field_name];
+						$extras 	=  $field_type->extras;
+					}					
+					
 					$field_info = (object)array(
 						'name' => $field_name, 
 						'crud_type' => $this->change_field_type !== null && isset($this->change_field_type[$field_name]) ?
@@ -136,7 +143,8 @@ class grocery_CRUD_Field_Types
 						'display_as' => isset($this->display_as[$field_name]) ? 
 												$this->display_as[$field_name] : 
 												ucfirst(str_replace("_"," ",$field_name)),
-						'required'	=> in_array($field_name,$this->required_fields) ? true : false
+						'required'	=> in_array($field_name,$this->required_fields) ? true : false,
+						'extras'	=> $extras
 					);
 					
 					$types[$field_name] = $field_info;
@@ -148,8 +156,15 @@ class grocery_CRUD_Field_Types
 			{
 				$field_name = isset($field_object->field_name) ? $field_object->field_name : $field_object;
 				
-				if(!isset($types[$field_name]))
+				if(!isset($types[$field_name]))//Doesn't exist in the database? Create it for the CRUD
 				{
+					$extras = false;
+					if($this->change_field_type !== null && isset($this->change_field_type[$field_name]))
+					{
+						$field_type = $this->change_field_type[$field_name];
+						$extras 	=  $field_type->extras;
+					}
+					
 					$field_info = (object)array(
 						'name' => $field_name, 
 						'crud_type' => $this->change_field_type !== null && isset($this->change_field_type[$field_name]) ?
@@ -158,7 +173,8 @@ class grocery_CRUD_Field_Types
 						'display_as' => isset($this->display_as[$field_name]) ? 
 												$this->display_as[$field_name] : 
 												ucfirst(str_replace("_"," ",$field_name)),
-						'required'	=> in_array($field_name,$this->required_fields) ? true : false
+						'required'	=> in_array($field_name,$this->required_fields) ? true : false,
+						'extras'	=> $extras
 					);
 					
 					$types[$field_name] = $field_info;
@@ -641,6 +657,7 @@ class grocery_CRUD_Model_Driver extends grocery_CRUD_Field_Types
 		
 		$field_types = $this->get_field_types();
 		$required_fields = $this->required_fields;
+		$unique_fields = $this->_unique_fields;
 		$add_fields = $this->get_add_fields();
 		
 		if(!empty($required_fields))
@@ -654,6 +671,32 @@ class grocery_CRUD_Model_Driver extends grocery_CRUD_Field_Types
 				}	
 			}			
 		}
+		
+		/** Checking for unique fields. If the field value is not unique then 
+		 * return a validation error straight away, if not continue... */
+		if(!empty($unique_fields))
+		{
+			$form_validation = $this->form_validation();
+		
+			foreach($add_fields as $add_field)
+			{
+				$field_name = $add_field->field_name;
+				if(in_array( $field_name, $unique_fields) )
+				{
+					$form_validation->set_rules( $field_name,
+							$field_types[$field_name]->display_as,
+							'is_unique['.$this->basic_db_table.'.'.$field_name.']');
+				}
+			}
+		
+			if(!$form_validation->run())
+			{
+				$validation_result->error_message = $form_validation->error_string();
+				$validation_result->error_fields = $form_validation->_error_array;
+		
+				return $validation_result;
+			}
+		}		
 		
 		if(!empty($this->validation_rules))
 		{		
@@ -707,6 +750,7 @@ class grocery_CRUD_Model_Driver extends grocery_CRUD_Field_Types
 		
 		$field_types = $this->get_field_types();
 		$required_fields = $this->required_fields;
+		$unique_fields = $this->_unique_fields;
 		$edit_fields = $this->get_edit_fields();
 		
 		if(!empty($required_fields))
@@ -720,6 +764,54 @@ class grocery_CRUD_Model_Driver extends grocery_CRUD_Field_Types
 				}	
 			}			
 		}
+		
+		
+		/** Checking for unique fields. If the field value is not unique then
+		 * return a validation error straight away, if not continue... */		
+		if(!empty($unique_fields))
+		{
+			$form_validation = $this->form_validation();
+		
+			$form_validation_check = false;
+		
+			foreach($edit_fields as $edit_field)
+			{
+				$field_name = $edit_field->field_name;
+				if(in_array( $field_name, $unique_fields) )
+				{
+					$state_info = $this->getStateInfo();
+					$primary_key = $this->get_primary_key();
+					$field_name_value = $_POST[$field_name];
+		
+					$this->basic_model->where($primary_key,$state_info->primary_key);
+					$row = $this->basic_model->get_row();
+					
+					if(!isset($row->$field_name)) {
+						throw new Exception("The field name doesn't exist in the database. ".
+								 			"Please use the unique fields only for fields ".
+											"that exist in the database");
+					} 
+					
+					$previous_field_name_value = $row->$field_name;
+					
+					if(!empty($previous_field_name_value) && $previous_field_name_value != $field_name_value) {
+						$form_validation->set_rules( $field_name,
+								$field_types[$field_name]->display_as,
+								'is_unique['.$this->basic_db_table.'.'.$field_name.']');
+		
+						$form_validation_check = true;
+					}
+				}
+			}
+		
+			if($form_validation_check && !$form_validation->run())
+			{
+				$validation_result->error_message = $form_validation->error_string();
+				$validation_result->error_fields = $form_validation->_error_array;
+		
+				return $validation_result;
+			}
+		}		
 		
 		if(!empty($this->validation_rules))
 		{
@@ -1449,6 +1541,8 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 		
 		if(!$ajax)
 		{
+			$this->_add_js_vars(array('dialog_forms' => $this->config->dialog_forms));
+			
 			$data->list_view = $this->_theme_view('list.php',$data,true);
 			$this->_theme_view('list_template.php',$data);	
 		}
@@ -3107,6 +3201,7 @@ class grocery_CRUD extends grocery_CRUD_States
 	protected $or_having 			= array();
 	protected $limit 				= null;
 	protected $required_fields		= array();
+	protected $_unique_fields 			= array();
 	protected $validation_rules		= array();
 	protected $relation				= array();
 	protected $relation_n_n			= array();
@@ -3116,6 +3211,8 @@ class grocery_CRUD extends grocery_CRUD_States
 	protected $form_validation		= null;
 	protected $change_field_type	= null;
 	protected $primary_keys			= array();
+	protected $crud_url_path		= null;
+	protected $list_url_path		= null;
 	
 	/* The unsetters */
 	protected $unset_texteditor		= array();
@@ -3910,6 +4007,7 @@ class grocery_CRUD extends grocery_CRUD_States
 		$this->config->default_text_editor	= $ci->config->item('grocery_crud_default_text_editor');
 		$this->config->text_editor_type		= $ci->config->item('grocery_crud_text_editor_type');
 		$this->config->character_limiter	= $ci->config->item('grocery_crud_character_limiter');
+		$this->config->dialog_forms			= $ci->config->item('grocery_crud_dialog_forms');
 		
 		/** Initialize default paths */
 		$this->default_javascript_path				= $this->default_assets_path.'/js';
@@ -4469,6 +4567,25 @@ class grocery_CRUD extends grocery_CRUD_States
 	}
 	
 	/**
+	 * Add the fields that they are as UNIQUE in the database structure
+	 * 
+	 * @return grocery_CRUD
+	 */
+	public function unique_fields()
+	{
+		$args = func_get_args();
+	
+		if(isset($args[0]) && is_array($args[0]))
+		{
+			$args = $args[0];
+		}
+	
+		$this->_unique_fields = $args;
+	
+		return $this;
+	}	
+	
+	/**
 	 * 
 	 * Sets the basic database table that we will get our data. 
 	 * @param string $table_name
@@ -4490,6 +4607,32 @@ class grocery_CRUD extends grocery_CRUD_States
 			die();
 		}
 			
+		return $this;
+	}
+	
+	/**
+	 * Set a full URL path to this method.
+	 * 
+	 * This method is useful when the path is not specified correctly. 
+	 * Especially when we are using routes.	 
+	 * For example:
+	 * Let's say we have the path http://www.example.com/ however the original url path is
+	 * http://www.example.com/example/index . We have to specify the url so we can have 
+	 * all the CRUD operations correctly.
+	 * The url path has to be set from this method like this:
+	 * <code>
+	 * 		$crud->set_crud_url_path(site_url('example/index'));
+	 * </code>
+	 * 
+	 * @param string $crud_url_path
+	 * @param string $list_url_path
+	 * @return grocery_CRUD
+	 */
+	public function set_crud_url_path($crud_url_path, $list_url_path = null)
+	{
+		$this->crud_url_path = $crud_url_path;
+		$this->list_url_path = $list_url_path;
+		
 		return $this;
 	}
 	
