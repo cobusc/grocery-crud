@@ -248,8 +248,11 @@ class grocery_CRUD_Field_Types
 				
 			break;
 			case 'true_false':
-				if(isset($this->default_true_false_text[$value]))
+				if(is_array($field_info->extras) && array_key_exists($value,$field_info->extras)) {
+					$value = $field_info->extras[$value];
+				} else if(isset($this->default_true_false_text[$value])) {
 					$value = $this->default_true_false_text[$value];
+				}
 			break;
 			case 'string':
 				$value = $this->character_limiter($value,$this->character_limiter,"...");
@@ -1969,7 +1972,7 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 	{
 		$this->set_css($this->default_css_path.'/jquery_plugins/fancybox/jquery.fancybox.css');
 		
-		$this->set_js_lib($this->default_javascript_path.'/jquery_plugins/jquery.fancybox.pack.js');
+		$this->set_js_lib($this->default_javascript_path.'/jquery_plugins/jquery.fancybox-1.3.4.js');
 		$this->set_js_lib($this->default_javascript_path.'/jquery_plugins/jquery.easing-1.3.pack.js');		
 	}
 	
@@ -2084,11 +2087,13 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 		
 		$input = "<div class='pretty-radio-buttons'>";
 		
+		$true_string = is_array($field_info->extras) && array_key_exists(1,$field_info->extras) ? $field_info->extras[1] : $this->default_true_false_text[1];
 		$checked = $value === '1' || $value === 't' || ($value_is_null && ($field_info->default === '1' || $field_info->default === 'true')) ? "checked = 'checked'" : "";
-		$input = "<label><input id='field-{$field_info->name}-true'  type='radio' name='{$field_info->name}' value='1' $checked /> ".$this->default_true_false_text[1]."</label> ";
+		$input .= "<label><input id='field-{$field_info->name}-true' class='radio-uniform'  type='radio' name='{$field_info->name}' value='1' $checked /> ".$true_string."</label> ";
 		
+		$false_string =  is_array($field_info->extras) && array_key_exists(0,$field_info->extras) ? $field_info->extras[0] : $this->default_true_false_text[0];
 		$checked = $value === '0' || $value === 'f' || ($value_is_null && ($field_info->default === '0' || $field_info->default === 'false')) ? "checked = 'checked'" : ""; 
-		$input .= "<label><input id='field-{$field_info->name}-false' type='radio' name='{$field_info->name}' value='0' $checked /> ".$this->default_true_false_text[0]."</label>";
+		$input .= "<label><input id='field-{$field_info->name}-false' class='radio-uniform' type='radio' name='{$field_info->name}' value='0' $checked /> ".$false_string."</label>";
 		
 		$input .= "</div>";
 		return $input;
@@ -2865,7 +2870,9 @@ class grocery_CRUD_States extends grocery_CRUD_Layout
 		$state_info = $this->get_state_info_from_url();
 		$extra_values = $ci->uri->segment($state_info->segment_position - 1) != $this->get_method_name() ? $ci->uri->segment($state_info->segment_position - 1) : '';
 		
-		return md5($this->get_controller_name().$this->get_method_name().$extra_values);
+		return $this->crud_url_path !== null 
+					? md5($this->crud_url_path) 
+					: md5($this->get_controller_name().$this->get_method_name().$extra_values);
 	}
 	
 	protected function get_method_name()
@@ -3172,9 +3179,9 @@ class grocery_CRUD extends grocery_CRUD_States
 	 */
 	const	VERSION = "1.3.3";
 	
-	const	JQUERY 			= "jquery-1.8.2.min.js";
-	const	JQUERY_UI_JS 	= "jquery-ui-1.9.1.custom.min.js";
-	const	JQUERY_UI_CSS 	= "jquery-ui-1.9.1.custom.min.css";
+	const	JQUERY 			= "jquery-1.9.0.min.js";
+	const	JQUERY_UI_JS 	= "jquery-ui-1.10.0.custom.min.js";
+	const	JQUERY_UI_CSS 	= "jquery-ui-1.10.0.custom.min.css";
 	
 	private $state_code 			= null;
 	private $state_info 			= null;
