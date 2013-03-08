@@ -1764,6 +1764,8 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 		$data->fields 			= $this->get_add_fields();
 		$data->hidden_fields	= $this->get_add_hidden_fields();
 		$data->unset_back_to_list	= $this->unset_back_to_list;
+		$data->unique_hash			= $this->get_method_hash();
+		$data->is_ajax 			= $this->_is_ajax();
 
 		$this->_theme_view('add.php',$data);
 		$this->_inline_js("var js_date_format = '".$this->js_date_format."';");
@@ -1786,12 +1788,14 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 		$data->update_url	= $this->getUpdateUrl($state_info);
 		$data->delete_url	= $this->getDeleteUrl($state_info);
 		$data->input_fields = $this->get_edit_input_fields($data->field_values);
+		$data->unique_hash			= $this->get_method_hash();
 
 		$data->fields 		= $this->get_edit_fields();
 		$data->hidden_fields	= $this->get_edit_hidden_fields();
 		$data->unset_back_to_list	= $this->unset_back_to_list;
 
 		$data->validation_url	= $this->getValidationUpdateUrl($state_info->primary_key);
+		$data->is_ajax 			= $this->_is_ajax();
 
 		$this->_theme_view('edit.php',$data);
 		$this->_inline_js("var js_date_format = '".$this->js_date_format."';");
@@ -1823,7 +1827,7 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 		{
 			if(!empty($field_info->primary_key) && !$this->unset_edit)
 			{
-				return $this->l('insert_success_message')." <a href='".$this->getEditUrl($field_info->primary_key)."'>".$this->l('form_edit')." {$this->subject}</a> ";
+				return $this->l('insert_success_message')." <a class='go-to-edit-form' href='".$this->getEditUrl($field_info->primary_key)."'>".$this->l('form_edit')." {$this->subject}</a> ";
 			}
 			else
 			{
@@ -1849,10 +1853,14 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 
 			if(!$this->unset_back_to_list && !empty($insert_result) && !$this->unset_edit)
 			{
-				$success_message .= " <a href='".$this->getEditUrl($insert_result)."'>".$this->l('form_edit')." {$this->subject}</a> ".$this->l('form_or');
+				$success_message .= " <a class='go-to-edit-form' href='".$this->getEditUrl($insert_result)."'>".$this->l('form_edit')." {$this->subject}</a> ";
+
+				if (!$this->_is_ajax()) {
+					$success_message .= $this->l('form_or');
+				}
 			}
 
-			if(!$this->unset_back_to_list)
+			if(!$this->unset_back_to_list && !$this->_is_ajax())
 			{
 				$success_message .= " <a href='".$this->getListUrl()."'>".$this->l('form_go_back_to_list')."</a>";
 			}
@@ -2048,7 +2056,7 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 		else
 		{
 			$success_message = '<p>'.$this->l('update_success_message');
-			if(!$this->unset_back_to_list)
+			if(!$this->unset_back_to_list && !$this->_is_ajax())
 			{
 				$success_message .= " <a href='".$this->getListUrl()."'>".$this->l('form_go_back_to_list')."</a>";
 			}
@@ -2654,8 +2662,8 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 	protected function _get_ajax_results()
 	{
 		//This is a $_POST request rather that $_GET request , because
-		//Codeigniter doesn't like the $_GET requests!
-		if (array_key_exists('is_ajax', $_POST) && $_POST['is_ajax'] == 'true') {
+		//Codeigniter doesn't like the $_GET requests so much!
+		if ($this->_is_ajax()) {
 			@ob_end_clean();
 			$results= (object)array(
 					'output' => $this->views_as_string,
@@ -2669,6 +2677,11 @@ class grocery_CRUD_Layout extends grocery_CRUD_Model_Driver
 			die;
 		}
 		//else just continue
+	}
+
+	protected function _is_ajax()
+	{
+		return array_key_exists('is_ajax', $_POST) && $_POST['is_ajax'] == 'true' ? true: false;
 	}
 
 	protected function _theme_view($view, $vars = array(), $return = FALSE)
@@ -3179,9 +3192,9 @@ class grocery_CRUD extends grocery_CRUD_States
 	 */
 	const	VERSION = "1.3.3";
 
-	const	JQUERY 			= "jquery-1.9.0.min.js";
-	const	JQUERY_UI_JS 	= "jquery-ui-1.10.0.custom.min.js";
-	const	JQUERY_UI_CSS 	= "jquery-ui-1.10.0.custom.min.css";
+	const	JQUERY 			= "jquery-1.9.1.min.js";
+	const	JQUERY_UI_JS 	= "jquery-ui-1.10.1.custom.min.js";
+	const	JQUERY_UI_CSS 	= "jquery-ui-1.10.1.custom.min.css";
 
 	private $state_code 			= null;
 	private $state_info 			= null;
@@ -4030,7 +4043,6 @@ class grocery_CRUD extends grocery_CRUD_States
 		$this->default_css_path						= $this->default_assets_path.'/css';
 		$this->default_texteditor_path 				= $this->default_assets_path.'/texteditor';
 		$this->default_theme_path					= $this->default_assets_path.'/themes';
-
 
 		$this->character_limiter = $this->config->character_limiter;
 
